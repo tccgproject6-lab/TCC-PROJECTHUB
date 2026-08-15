@@ -1,287 +1,1376 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
 
+<title>TCC ProjectHub - Admin Dashboard</title>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TCC ProjectHub - Admin Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
-    
-    <!-- Supabase JS Client -->
+<link rel="stylesheet" href="css/style.css">
 
-    <style>
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .admin-container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-        .header-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1e293b;
-            padding: 15px 20px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            margin-bottom: 25px;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; }
-        }
-        form label {
-            display: block;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #cbd5e1;
-        }
-        form input {
-            width: 100%;
-            padding: 8px 12px;
-            margin-top: 4px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: white;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        form button {
-            width: 100%;
-            margin-top: 15px;
-            padding: 10px;
-            background: #0284c7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #334155;
-            font-size: 0.9rem;
-        }
-        th { background: #0f172a; color: #38bdf8; }
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            width: auto;
-            font-size: 0.8rem;
-        }
-        .btn-nav {
-            background: #10b981;
-            color: white;
-            padding: 8px 15px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-        .badge {
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            display: inline-block;
-        }
-        .badge-success { background: #065f46; color: #34d399; }
-        .badge-warning { background: #78350f; color: #fbbf24; }
-    </style>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    background:
+        radial-gradient(circle at 10% 10%, rgba(34,211,238,.12), transparent 30%),
+        radial-gradient(circle at 90% 20%, rgba(99,102,241,.14), transparent 32%),
+        linear-gradient(135deg, #020617, #07111f 50%, #0b1024);
+    color: #f8fafc;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow-x: hidden;
+}
+
+/* Main container */
+.admin-container {
+    width: min(1200px, calc(100% - 28px));
+    margin: 20px auto 40px;
+}
+
+/* Header */
+.header-bar {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(148,163,184,.18);
+    border-radius: 20px;
+    background: rgba(15,23,42,.78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.28);
+}
+
+.header-title {
+    min-width: 0;
+}
+
+.header-title h1 {
+    margin: 0;
+    color: #67e8f9;
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    line-height: 1.2;
+}
+
+.header-title p {
+    margin: 7px 0 0;
+    color: #94a3b8;
+    font-size: .9rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    border: 0;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    color: white;
+    transition: .2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+.btn-workspace {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.btn-logout {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Statistics */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,.16);
+    background: rgba(15,23,42,.72);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 15px 45px rgba(0,0,0,.2);
+}
+
+.stat-label {
+    color: #94a3b8;
+    font-size: .82rem;
+}
+
+.stat-value {
+    margin-top: 5px;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #67e8f9;
+}
+
+/* Main grid */
+.grid-2 {
+    display: grid;
+    grid-template-columns: minmax(280px, .85fr) minmax(0, 1.5fr);
+    gap: 20px;
+    align-items: start;
+}
+
+/* Cards */
+.admin-card {
+    min-width: 0;
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(148,163,184,.17);
+    background: rgba(15,23,42,.76);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 20px 55px rgba(0,0,0,.24);
+}
+
+.admin-card h2,
+.admin-card h3 {
+    margin-top: 0;
+    color: #67e8f9;
+}
+
+.card-description {
+    margin-top: -5px;
+    margin-bottom: 18px;
+    color: #94a3b8;
+    font-size: .84rem;
+    line-height: 1.5;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #cbd5e1;
+    font-size: .86rem;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #334155;
+    border-radius: 11px;
+    outline: none;
+    background: rgba(2,6,23,.85);
+    color: white;
+    font-size: .95rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #22d3ee;
+    box-shadow: 0 0 0 3px rgba(34,211,238,.1);
+}
+
+.submit-btn {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 5px;
+    border: 0;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #06b6d4, #2563eb);
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.submit-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* Members toolbar */
+.members-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.members-toolbar h3 {
+    margin: 0;
+}
+
+.refresh-btn {
+    border: 1px solid #334155;
+    border-radius: 9px;
+    background: #0f172a;
+    color: #cbd5e1;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+/* Search */
+.search-box {
+    width: 100%;
+    min-height: 44px;
+    margin-bottom: 12px;
+    padding: 10px 13px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: #020617;
+    color: white;
+    outline: none;
+}
+
+.search-box:focus {
+    border-color: #22d3ee;
+}
+
+/* Table wrapper */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #263449;
+    border-radius: 12px;
+    background: rgba(2,6,23,.55);
+}
+
+table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #263449;
+    font-size: .86rem;
+}
+
+th {
+    background: #0b1220;
+    color: #67e8f9;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+td {
+    color: #e2e8f0;
+}
+
+tr:last-child td {
+    border-bottom: 0;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.badge-admin {
+    background: rgba(245,158,11,.15);
+    color: #fbbf24;
+}
+
+.badge-member {
+    background: rgba(34,211,238,.12);
+    color: #67e8f9;
+}
+
+.badge-success {
+    background: rgba(16,185,129,.15);
+    color: #34d399;
+}
+
+.badge-warning {
+    background: rgba(245,158,11,.15);
+    color: #fbbf24;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: white;
+    cursor: pointer;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.edit-btn {
+    background: #2563eb;
+}
+
+.delete-btn {
+    background: #dc2626;
+}
+
+.action-btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+/* Empty/error states */
+.table-message {
+    padding: 25px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.error-message {
+    color: #f87171;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(0,0,0,.72);
+    backdrop-filter: blur(8px);
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    width: min(500px, 100%);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    padding: 22px;
+    border: 1px solid rgba(148,163,184,.2);
+    border-radius: 20px;
+    background: #0f172a;
+    box-shadow: 0 30px 90px rgba(0,0,0,.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #67e8f9;
+}
+
+.close-modal {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 9px;
+    background: #1e293b;
+    color: white;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.modal-actions button {
+    flex: 1;
+    min-height: 44px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.cancel-btn {
+    background: #334155;
+    color: white;
+}
+
+.save-edit-btn {
+    background: linear-gradient(135deg, #06b6d4, #2563eb);
+    color: white;
+}
+
+/* Temporary password box */
+.temp-password-box {
+    display: none;
+    margin-top: 15px;
+    padding: 14px;
+    border: 1px solid rgba(16,185,129,.35);
+    border-radius: 12px;
+    background: rgba(6,78,59,.25);
+}
+
+.temp-password-box strong {
+    color: #34d399;
+}
+
+.temp-password {
+    display: block;
+    margin-top: 6px;
+    padding: 9px;
+    border-radius: 8px;
+    background: #020617;
+    color: #67e8f9;
+    font-family: monospace;
+    word-break: break-all;
+}
+
+/* Mobile */
+@media (max-width: 800px) {
+    .admin-container {
+        width: min(100% - 18px, 700px);
+        margin-top: 10px;
+        padding-bottom: 20px;
+    }
+
+    .header-bar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .header-actions .btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-card {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 430px) {
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+    }
+
+    .members-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .refresh-btn {
+        width: 100%;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+}
+</style>
 </head>
+
 <body>
 
-    <div class="admin-container">
-        <!-- Header Bar -->
-        <div class="header-bar">
-            <div>
-                <h2 style="margin: 0; color: #38bdf8;">Admin Panel - TCC ProjectHub</h2>
-                <small id="adminNameDisplay" style="color: #94a3b8;"></small>
-            </div>
-            <div>
-                <a href="index.html" class="btn-nav">🚀 Nenda Workspace</a>
-                <button id="logoutBtn" style="width: auto; margin-left: 10px; background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">Logout</button>
-            </div>
+<div class="admin-container">
+
+    <header class="header-bar">
+        <div class="header-title">
+            <h1>⚙️ TCC ProjectHub Admin</h1>
+            <p id="adminNameDisplay">Inapakia taarifa za administrator...</p>
         </div>
 
-        <div class="grid-2">
-            <!-- Form ya Kusajili Member Mpya -->
-            <div class="admin-card">
-                <h3 style="margin-top: 0; color: #38bdf8;">Sajili Member Mpya</h3>
-                <p style="font-size: 0.8rem; color: #94a3b8;">Mfumo utatoa temporary password random baada ya usajili.</p>
-                
-                <form id="addMemberForm">
-                    <label>Jina Bufe:</label>
-                    <input type="text" id="memberName" placeholder="Mf. Ally Mna Ally" required>
+        <div class="header-actions">
+            <a href="index.html" class="btn btn-workspace">
+                🚀 Workspace
+            </a>
 
-                    <label>Barua Pepe (Email):</label>
-                    <input type="email" id="memberEmail" placeholder="mwanachama@gsms.com" required>
+            <button type="button" id="logoutBtn" class="btn btn-logout">
+                Logout
+            </button>
+        </div>
+    </header>
 
-                    <label>Reg No / Namba ya Usajili:</label>
-                    <input type="text" id="memberRegNo" placeholder="Mf. GSMS/2026/001" required>
+    <section class="stats-grid">
 
-                    <button type="submit" id="submitBtn">Sajili Member</button>
-                </form>
-            </div>
+        <div class="stat-card">
+            <div class="stat-label">Jumla ya Watumiaji</div>
+            <div class="stat-value" id="totalMembers">0</div>
+        </div>
 
-            <!-- Table ya Members Waliopo -->
-            <div class="admin-card">
-                <h3 style="margin-top: 0; color: #38bdf8;">Orodha ya Watumiaji</h3>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Reg No / Email</th>
-                                <th>Jina</th>
-                                <th>Role</th>
-                                <th>Pass Reset?</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="membersTableBody">
-                            <tr><td colspan="5" style="text-align: center;">Inapakia watumiaji...</td></tr>
-                        </tbody>
-                    </table>
+        <div class="stat-card">
+            <div class="stat-label">Members</div>
+            <div class="stat-value" id="memberCount">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Admins</div>
+            <div class="stat-value" id="adminCount">0</div>
+        </div>
+
+    </section>
+
+    <div class="grid-2">
+
+        <section class="admin-card">
+
+            <h3>➕ Sajili Member Mpya</h3>
+
+            <p class="card-description">
+                Admin anaweza kuongeza mtumiaji mpya kwenye mfumo.
+                Mfumo utatengeneza temporary password.
+            </p>
+
+            <form id="addMemberForm">
+
+                <div class="form-group">
+                    <label for="memberName">Jina Kamili</label>
+                    <input
+                        type="text"
+                        id="memberName"
+                        placeholder="Mf. Ally Mna Ally"
+                        maxlength="120"
+                        required
+                    >
                 </div>
+
+                <div class="form-group">
+                    <label for="memberEmail">Barua Pepe</label>
+                    <input
+                        type="email"
+                        id="memberEmail"
+                        placeholder="member@example.com"
+                        maxlength="254"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="memberRegNo">Reg No</label>
+                    <input
+                        type="text"
+                        id="memberRegNo"
+                        placeholder="Mf. GSMS/2026/001"
+                        maxlength="80"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    id="submitBtn"
+                    class="submit-btn"
+                >
+                    ➕ Sajili Member
+                </button>
+
+            </form>
+
+            <div id="tempPasswordBox" class="temp-password-box">
+                <strong>✅ Member amesajiliwa</strong>
+                <div style="color:#cbd5e1;font-size:.82rem;margin-top:5px;">
+                    Temporary password:
+                </div>
+                <span id="temporaryPassword" class="temp-password"></span>
             </div>
-        </div>
+
+        </section>
+
+        <section class="admin-card">
+
+            <div class="members-toolbar">
+                <h3>👥 Watumiaji wa Mfumo</h3>
+
+                <button
+                    type="button"
+                    id="refreshMembersBtn"
+                    class="refresh-btn"
+                >
+                    🔄 Refresh
+                </button>
+            </div>
+
+            <input
+                type="search"
+                id="memberSearch"
+                class="search-box"
+                placeholder="🔎 Tafuta kwa jina, email au Reg No..."
+                autocomplete="off"
+            >
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Mtumiaji</th>
+                            <th>Reg No</th>
+                            <th>Role</th>
+                            <th>Password</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="membersTableBody">
+                        <tr>
+                            <td colspan="5" class="table-message">
+                                Inapakia watumiaji...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
     </div>
 
-    <!-- Pakia Mafaili ya Mfumo -->
-    <script src="js/config.js"></script>
-    <script src="js/db.js"></script>
-    <script src="js/auth.js"></script>
+</div>
 
-    <!-- Admin Logic Scripts -->
-    <script>
-        let adminUser = null;
+<!-- EDIT MEMBER MODAL -->
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            adminUser = await window.requireAuth('admin');
+<div id="editModal" class="modal-overlay">
 
-            if (!adminUser || adminUser.role !== 'admin') {
-                alert('Huna ruhusa ya kufungua ukurasa huu!');
-                window.location.href = 'index.html';
-                return;
-            }
+    <div class="modal">
 
-            document.getElementById('adminNameDisplay').textContent = `Logged in as: ${adminUser.full_name} (${adminUser.reg_no})`;
+        <div class="modal-header">
 
-            // Logout Event
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                if (typeof logout === 'function') {
-                    logout();
-                } else {
-                    window.logout();
-                }
-            });
+            <h3>✏️ Edit Member</h3>
 
-            // Load Members Table
-            await loadMembers();
+            <button
+                type="button"
+                id="closeEditModal"
+                class="close-modal"
+            >
+                ✕
+            </button>
 
-            // Form Submit Event
-            const addMemberForm = document.getElementById('addMemberForm');
-            addMemberForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const submitBtn = document.getElementById('submitBtn');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Inasajili...';
+        </div>
 
-                const newMember = {
-                    full_name: document.getElementById('memberName').value.trim(),
-                    email: document.getElementById('memberEmail').value.trim(),
-                    reg_no: document.getElementById('memberRegNo').value.trim()
-                };
+        <form id="editMemberForm">
 
-                try {
-                    const result = await registerUser(newMember);
-                    alert(`Member ${newMember.full_name} amesajiliwa! Temporary password: ${result.temporaryPassword}`);
-                    addMemberForm.reset();
-                    await loadMembers();
-                } catch (err) {
-                    alert('Imefeli kusajili member: ' + err.message);
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Sajili Member';
-                }
-            });
-        });
+            <input type="hidden" id="editMemberId">
 
-        async function loadMembers() {
-            const tbody = document.getElementById('membersTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Inapakia watumiaji...</td></tr>';
+            <div class="form-group">
+                <label for="editMemberName">Jina Kamili</label>
+                <input
+                    type="text"
+                    id="editMemberName"
+                    maxlength="120"
+                    required
+                >
+            </div>
 
-            try {
-                let members = [];
-                members = await getAllMembers();
+            <div class="form-group">
+                <label for="editMemberEmail">Email</label>
+                <input
+                    type="email"
+                    id="editMemberEmail"
+                    maxlength="254"
+                    required
+                >
+            </div>
 
-                tbody.innerHTML = '';
+            <div class="form-group">
+                <label for="editMemberRegNo">Reg No</label>
+                <input
+                    type="text"
+                    id="editMemberRegNo"
+                    maxlength="80"
+                    required
+                >
+            </div>
 
-                if (members.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Hakuna wanachama waliopatikana.</td></tr>';
-                    return;
-                }
+            <div class="form-group">
+                <label for="editMemberRole">Role</label>
 
-                members.forEach(m => {
-                    const tr = document.createElement('tr');
-                    const passStatus = m.is_password_changed 
-                        ? '<span class="badge badge-success">Imebadilishwa</span>' 
-                        : '<span class="badge badge-warning">Temporary password</span>';
+                <select id="editMemberRole">
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
 
-                    const c1 = document.createElement('td');
-                    const b = document.createElement('b'); b.textContent = m.reg_no || '';
-                    const br = document.createElement('br');
-                    const sm = document.createElement('small'); sm.style.color = '#94a3b8'; sm.textContent = m.email || '';
-                    c1.append(b, br, sm);
-                    const c2 = document.createElement('td'); c2.textContent = m.full_name || '';
-                    const c3 = document.createElement('td'); c3.textContent = (m.role || '').toUpperCase();
-                    const c4 = document.createElement('td'); c4.innerHTML = passStatus;
-                    const c5 = document.createElement('td');
-                    if (m.role !== 'admin') { const btn = document.createElement('button'); btn.className='btn-danger'; btn.dataset.id=m.id; btn.textContent='Futa'; c5.appendChild(btn); }
-                    else { const small=document.createElement('small'); small.style.color='#64748b'; small.textContent='Admin'; c5.appendChild(small); }
-                    tr.append(c1,c2,c3,c4,c5);
-                    tbody.appendChild(tr);
-                });
+            <div class="modal-actions">
 
-                // Attach Delete Event
-                document.querySelectorAll('.btn-danger').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = e.target.getAttribute('data-id');
-                        if (confirm('Je, una uhakika unataka kufuta member huyu?')) {
-                            try {
-                                await deleteUser(id);
-                                await loadMembers();
-                            } catch (err) {
-                                alert('Imefeli kufuta: ' + err.message);
-                            }
-                        }
-                    });
-                });
+                <button
+                    type="button"
+                    id="cancelEditBtn"
+                    class="cancel-btn"
+                >
+                    Ghairi
+                </button>
 
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="5" style="color: #ef4444; text-align: center;">Error: ${err.message}</td></tr>`;
+                <button
+                    type="submit"
+                    id="saveEditBtn"
+                    class="save-edit-btn"
+                >
+                    💾 Hifadhi Mabadiliko
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let adminUser = null;
+let allMembers = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    adminUser = await window.requireAuth('admin');
+
+    if (!adminUser || adminUser.role !== 'admin') {
+        alert('Huna ruhusa ya kufungua Admin Panel.');
+        window.location.replace('index.html');
+        return;
+    }
+
+    document.getElementById('adminNameDisplay').textContent =
+        `Logged in as: ${adminUser.full_name} • ${adminUser.reg_no}`;
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        window.logout();
+    });
+
+    document.getElementById('refreshMembersBtn').addEventListener(
+        'click',
+        loadMembers
+    );
+
+    document.getElementById('memberSearch').addEventListener(
+        'input',
+        renderMembers
+    );
+
+    document.getElementById('addMemberForm').addEventListener(
+        'submit',
+        addMember
+    );
+
+    document.getElementById('editMemberForm').addEventListener(
+        'submit',
+        updateMember
+    );
+
+    document.getElementById('closeEditModal').addEventListener(
+        'click',
+        closeEditModal
+    );
+
+    document.getElementById('cancelEditBtn').addEventListener(
+        'click',
+        closeEditModal
+    );
+
+    document.getElementById('editModal').addEventListener(
+        'click',
+        event => {
+            if (event.target.id === 'editModal') {
+                closeEditModal();
             }
         }
-    </script>
+    );
+
+    await loadMembers();
+});
+
+
+async function loadMembers() {
+
+    const tbody =
+        document.getElementById('membersTableBody');
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5" class="table-message">
+                ⏳ Inapakia watumiaji...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        allMembers = await window.getAllMembers();
+
+        updateStatistics();
+        renderMembers();
+
+    } catch (error) {
+
+        console.error(error);
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="table-message error-message">
+                    ❌ Imeshindikana kupakia members: ${escapeHtml(error.message)}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+
+function updateStatistics() {
+
+    const total =
+        allMembers.length;
+
+    const members =
+        allMembers.filter(
+            user => user.role === 'member'
+        ).length;
+
+    const admins =
+        allMembers.filter(
+            user => user.role === 'admin'
+        ).length;
+
+    document.getElementById('totalMembers').textContent =
+        total;
+
+    document.getElementById('memberCount').textContent =
+        members;
+
+    document.getElementById('adminCount').textContent =
+        admins;
+}
+
+
+function renderMembers() {
+
+    const tbody =
+        document.getElementById('membersTableBody');
+
+    const search =
+        document.getElementById('memberSearch')
+            .value
+            .trim()
+            .toLowerCase();
+
+    const filtered =
+        allMembers.filter(user => {
+
+            const name =
+                String(user.full_name || '')
+                    .toLowerCase();
+
+            const email =
+                String(user.email || '')
+                    .toLowerCase();
+
+            const regNo =
+                String(user.reg_no || '')
+                    .toLowerCase();
+
+            return (
+                name.includes(search) ||
+                email.includes(search) ||
+                regNo.includes(search)
+            );
+        });
+
+    tbody.innerHTML = '';
+
+    if (filtered.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="table-message">
+                    🔎 Hakuna user anayelingana na utafutaji.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    filtered.forEach(user => {
+
+        const tr =
+            document.createElement('tr');
+
+        const userCell =
+            document.createElement('td');
+
+        const name =
+            document.createElement('strong');
+
+        name.textContent =
+            user.full_name || '';
+
+        const email =
+            document.createElement('small');
+
+        email.textContent =
+            user.email || '';
+
+        email.style.display = 'block';
+        email.style.color = '#94a3b8';
+        email.style.marginTop = '3px';
+
+        userCell.append(
+            name,
+            email
+        );
+
+
+        const regCell =
+            document.createElement('td');
+
+        regCell.textContent =
+            user.reg_no || '-';
+
+
+        const roleCell =
+            document.createElement('td');
+
+        const roleBadge =
+            document.createElement('span');
+
+        roleBadge.className =
+            user.role === 'admin'
+                ? 'badge badge-admin'
+                : 'badge badge-member';
+
+        roleBadge.textContent =
+            user.role === 'admin'
+                ? 'ADMIN'
+                : 'MEMBER';
+
+        roleCell.appendChild(
+            roleBadge
+        );
+
+
+        const passwordCell =
+            document.createElement('td');
+
+        const passwordBadge =
+            document.createElement('span');
+
+        passwordBadge.className =
+            user.is_password_changed
+                ? 'badge badge-success'
+                : 'badge badge-warning';
+
+        passwordBadge.textContent =
+            user.is_password_changed
+                ? 'Changed'
+                : 'Temporary';
+
+        passwordCell.appendChild(
+            passwordBadge
+        );
+
+
+        const actionCell =
+            document.createElement('td');
+
+        const actions =
+            document.createElement('div');
+
+        actions.className =
+            'action-buttons';
+
+
+        const editButton =
+            document.createElement('button');
+
+        editButton.type = 'button';
+        editButton.className =
+            'action-btn edit-btn';
+
+        editButton.textContent =
+            '✏️ Edit';
+
+        editButton.addEventListener(
+            'click',
+            () => openEditModal(user)
+        );
+
+
+        const deleteButton =
+            document.createElement('button');
+
+        deleteButton.type = 'button';
+        deleteButton.className =
+            'action-btn delete-btn';
+
+        deleteButton.textContent =
+            '🗑️ Delete';
+
+
+        if (user.role === 'admin') {
+
+            deleteButton.disabled = true;
+            deleteButton.title =
+                'Admin account haiwezi kufutwa hapa.';
+        }
+
+
+        deleteButton.addEventListener(
+            'click',
+            () => deleteMember(user)
+        );
+
+
+        actions.append(
+            editButton,
+            deleteButton
+        );
+
+        actionCell.appendChild(
+            actions
+        );
+
+
+        tr.append(
+            userCell,
+            regCell,
+            roleCell,
+            passwordCell,
+            actionCell
+        );
+
+        tbody.appendChild(tr);
+    });
+}
+
+
+async function addMember(event) {
+
+    event.preventDefault();
+
+    const button =
+        document.getElementById('submitBtn');
+
+    const form =
+        document.getElementById('addMemberForm');
+
+    const fullName =
+        document.getElementById('memberName')
+            .value
+            .trim();
+
+    const email =
+        document.getElementById('memberEmail')
+            .value
+            .trim()
+            .toLowerCase();
+
+    const regNo =
+        document.getElementById('memberRegNo')
+            .value
+            .trim();
+
+
+    if (!fullName || !email || !regNo) {
+        alert('Jaza taarifa zote za member.');
+        return;
+    }
+
+
+    button.disabled = true;
+    button.textContent =
+        '⏳ Inasajili...';
+
+
+    try {
+
+        const result =
+            await window.registerUser({
+                full_name: fullName,
+                email: email,
+                reg_no: regNo
+            });
+
+
+        const password =
+            result.temporaryPassword || '';
+
+
+        document.getElementById(
+            'temporaryPassword'
+        ).textContent = password;
+
+        document.getElementById(
+            'tempPasswordBox'
+        ).style.display = 'block';
+
+
+        form.reset();
+
+        await loadMembers();
+
+        alert(
+            `Member ${fullName} amesajiliwa.\n\nTemporary Password:\n${password}`
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            'Imeshindikana kusajili member:\n' +
+            error.message
+        );
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent =
+            '➕ Sajili Member';
+    }
+}
+
+
+function openEditModal(user) {
+
+    document.getElementById(
+        'editMemberId'
+    ).value = user.id;
+
+    document.getElementById(
+        'editMemberName'
+    ).value = user.full_name || '';
+
+    document.getElementById(
+        'editMemberEmail'
+    ).value = user.email || '';
+
+    document.getElementById(
+        'editMemberRegNo'
+    ).value = user.reg_no || '';
+
+    document.getElementById(
+        'editMemberRole'
+    ).value = user.role || 'member';
+
+
+    document.getElementById(
+        'editModal'
+    ).classList.add('active');
+}
+
+
+function closeEditModal() {
+
+    document.getElementById(
+        'editModal'
+    ).classList.remove('active');
+
+    document.getElementById(
+        'editMemberForm'
+    ).reset();
+}
+
+
+async function updateMember(event) {
+
+    event.preventDefault();
+
+    const button =
+        document.getElementById('saveEditBtn');
+
+    const id =
+        Number(
+            document.getElementById(
+                'editMemberId'
+            ).value
+        );
+
+    const full_name =
+        document.getElementById(
+            'editMemberName'
+        ).value.trim();
+
+    const email =
+        document.getElementById(
+            'editMemberEmail'
+        ).value.trim().toLowerCase();
+
+    const reg_no =
+        document.getElementById(
+            'editMemberRegNo'
+        ).value.trim();
+
+    const role =
+        document.getElementById(
+            'editMemberRole'
+        ).value;
+
+
+    if (!id || !full_name || !email || !reg_no) {
+        alert('Jaza taarifa zote.');
+        return;
+    }
+
+
+    button.disabled = true;
+    button.textContent =
+        '⏳ Inahifadhi...';
+
+
+    try {
+
+        await window.updateUser({
+            id,
+            full_name,
+            email,
+            reg_no,
+            role
+        });
+
+        closeEditModal();
+
+        await loadMembers();
+
+        alert(
+            '✅ Taarifa za member zimebadilishwa.'
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            'Imeshindikana ku-edit member:\n' +
+            error.message
+        );
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent =
+            '💾 Hifadhi Mabadiliko';
+    }
+}
+
+
+async function deleteMember(user) {
+
+    if (user.role === 'admin') {
+        alert(
+            'Admin account haiwezi kufutwa hapa.'
+        );
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            `Una uhakika unataka kumfuta:\n\n${user.full_name}\n${user.email}\n${user.reg_no}?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        await window.deleteUser(
+            user.id
+        );
+
+        await loadMembers();
+
+        alert(
+            '✅ Member amefutwa.'
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            'Imeshindikana kufuta member:\n' +
+            error.message
+        );
+    }
+}
+
+
+function escapeHtml(value) {
+
+    const div =
+        document.createElement('div');
+
+    div.textContent =
+        String(value ?? '');
+
+    return div.innerHTML;
+}
+</script>
 </body>
 </html>
