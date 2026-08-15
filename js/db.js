@@ -9,11 +9,26 @@
     };
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    const response = await fetch(`${API}${path}`, {
-      ...options,
-      headers,
-      cache: 'no-store'
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+
+    let response;
+    try {
+      response = await fetch(`${API}${path}`, {
+        ...options,
+        headers,
+        cache: 'no-store',
+        signal: controller.signal
+      });
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Server haijajibu kwa muda. Angalia internet na Render.');
+      }
+      throw new Error('Imeshindikana kuwasiliana na server.');
+    } finally {
+      clearTimeout(timeout);
+    }
+
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 401) {
@@ -110,7 +125,7 @@
     return api('/api/messages/clear', { method: 'POST' });
   }
   async function updateUser(userData) {
-    return api('/api/members/update', {
+    return api('/api/members/edit', {
         method: 'POST',
         body: JSON.stringify(userData)
     });

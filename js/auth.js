@@ -4,7 +4,11 @@ function clearSession() {
 }
 
 function getCurrentUser() {
-  try { return JSON.parse(sessionStorage.getItem('tcc_user') || 'null'); } catch { return null; }
+  try {
+    return JSON.parse(sessionStorage.getItem('tcc_user') || 'null');
+  } catch {
+    return null;
+  }
 }
 
 function logout() {
@@ -13,20 +17,31 @@ function logout() {
 }
 
 function redirectBasedOnRole(user) {
-  window.location.replace(user && user.role === 'admin' ? 'admin.html' : 'index.html');
+  if (!user) {
+    clearSession();
+    window.location.replace('login.html');
+    return;
+  }
+
+  window.location.replace(
+    user.role === 'admin' ? 'admin.html' : 'index.html'
+  );
 }
 
 async function requireAuth(requiredRole) {
   const user = await window.getVerifiedCurrentUser();
+
   if (!user) {
     clearSession();
     window.location.replace('login.html');
     return null;
   }
+
   if (requiredRole && user.role !== requiredRole) {
     window.location.replace('index.html');
     return null;
   }
+
   return user;
 }
 
