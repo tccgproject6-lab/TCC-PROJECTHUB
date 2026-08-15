@@ -1,9 +1,0 @@
-{
-  "name": "gsms-hub",
-  "private": true,
-  "version": "1.0.0",
-  "engines": { "node": ">=18" },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.54.0"
-  }
-}
