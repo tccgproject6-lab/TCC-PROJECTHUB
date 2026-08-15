@@ -982,12 +982,8 @@ function serveStatic(
     });
   }
 
-  if (
-    pathname === '/' ||
-    pathname === '/index.html'
-  ) {
-    pathname =
-      '/login.html';
+  if (pathname === '/') {
+  pathname = '/login.html';
   }
 
   const file = path.normalize(
