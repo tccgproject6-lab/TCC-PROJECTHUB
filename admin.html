@@ -4,525 +4,471 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#07111f">
-
 <title>TCC ProjectHub - Admin Dashboard</title>
-
 <link rel="stylesheet" href="css/style.css">
 
 <style>
-* {
-    box-sizing: border-box;
+*{box-sizing:border-box}
+
+html,body{
+    margin:0;
+    padding:0;
+    min-height:100%;
 }
 
-html,
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
-}
-
-body {
+body{
     background:
-        radial-gradient(circle at 10% 10%, rgba(34,211,238,.12), transparent 30%),
-        radial-gradient(circle at 90% 20%, rgba(99,102,241,.14), transparent 32%),
-        linear-gradient(135deg, #020617, #07111f 50%, #0b1024);
-    color: #f8fafc;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    overflow-x: hidden;
+        radial-gradient(circle at 10% 10%,rgba(34,211,238,.12),transparent 30%),
+        radial-gradient(circle at 90% 20%,rgba(99,102,241,.14),transparent 32%),
+        linear-gradient(135deg,#020617,#07111f 50%,#0b1024);
+    color:#f8fafc;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    overflow-x:hidden;
 }
 
-/* Main container */
-.admin-container {
-    width: min(1200px, calc(100% - 28px));
-    margin: 20px auto 40px;
+.admin-container{
+    width:min(1200px,calc(100% - 28px));
+    margin:20px auto 40px;
 }
 
-/* Header */
-.header-bar {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(148,163,184,.18);
-    border-radius: 20px;
-    background: rgba(15,23,42,.78);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 20px 60px rgba(0,0,0,.28);
+.header-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    padding:20px;
+    margin-bottom:20px;
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:20px;
+    background:rgba(15,23,42,.78);
+    backdrop-filter:blur(18px);
+    box-shadow:0 20px 60px rgba(0,0,0,.28);
 }
 
-.header-title {
-    min-width: 0;
+.header-title h1{
+    margin:0;
+    color:#67e8f9;
+    font-size:clamp(1.25rem,3vw,2rem);
 }
 
-.header-title h1 {
-    margin: 0;
-    color: #67e8f9;
-    font-size: clamp(1.25rem, 3vw, 2rem);
-    line-height: 1.2;
+.header-title p{
+    margin:7px 0 0;
+    color:#94a3b8;
+    font-size:.9rem;
 }
 
-.header-title p {
-    margin: 7px 0 0;
-    color: #94a3b8;
-    font-size: .9rem;
+.header-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    flex-wrap: wrap;
+.btn{
+    border:0;
+    text-decoration:none;
+    cursor:pointer;
+    border-radius:10px;
+    padding:10px 14px;
+    font-weight:700;
+    color:white;
 }
 
-.btn {
-    border: 0;
-    text-decoration: none;
-    cursor: pointer;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-weight: 700;
-    color: white;
-    transition: .2s ease;
+.btn-workspace{
+    background:linear-gradient(135deg,#10b981,#059669);
 }
 
-.btn:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.08);
+.btn-logout{
+    background:linear-gradient(135deg,#ef4444,#dc2626);
 }
 
-.btn-workspace {
-    background: linear-gradient(135deg, #10b981, #059669);
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-bottom:20px;
 }
 
-.btn-logout {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+.stat-card{
+    padding:18px;
+    border-radius:18px;
+    border:1px solid rgba(148,163,184,.16);
+    background:rgba(15,23,42,.72);
+    backdrop-filter:blur(15px);
 }
 
-/* Statistics */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
+.stat-label{
+    color:#94a3b8;
+    font-size:.82rem;
 }
 
-.stat-card {
-    padding: 18px;
-    border-radius: 18px;
-    border: 1px solid rgba(148,163,184,.16);
-    background: rgba(15,23,42,.72);
-    backdrop-filter: blur(15px);
-    box-shadow: 0 15px 45px rgba(0,0,0,.2);
+.stat-value{
+    margin-top:5px;
+    font-size:1.8rem;
+    font-weight:800;
+    color:#67e8f9;
 }
 
-.stat-label {
-    color: #94a3b8;
-    font-size: .82rem;
+.grid-2{
+    display:grid;
+    grid-template-columns:minmax(280px,.85fr) minmax(0,1.5fr);
+    gap:20px;
+    align-items:start;
 }
 
-.stat-value {
-    margin-top: 5px;
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #67e8f9;
+.admin-card{
+    min-width:0;
+    padding:20px;
+    border-radius:20px;
+    border:1px solid rgba(148,163,184,.17);
+    background:rgba(15,23,42,.76);
+    backdrop-filter:blur(18px);
+    box-shadow:0 20px 55px rgba(0,0,0,.24);
 }
 
-/* Main grid */
-.grid-2 {
-    display: grid;
-    grid-template-columns: minmax(280px, .85fr) minmax(0, 1.5fr);
-    gap: 20px;
-    align-items: start;
+.admin-card h3{
+    margin-top:0;
+    color:#67e8f9;
 }
 
-/* Cards */
-.admin-card {
-    min-width: 0;
-    padding: 20px;
-    border-radius: 20px;
-    border: 1px solid rgba(148,163,184,.17);
-    background: rgba(15,23,42,.76);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 20px 55px rgba(0,0,0,.24);
+.card-description{
+    margin-top:-5px;
+    margin-bottom:18px;
+    color:#94a3b8;
+    font-size:.84rem;
+    line-height:1.5;
 }
 
-.admin-card h2,
-.admin-card h3 {
-    margin-top: 0;
-    color: #67e8f9;
+.form-group{
+    margin-bottom:14px;
 }
 
-.card-description {
-    margin-top: -5px;
-    margin-bottom: 18px;
-    color: #94a3b8;
-    font-size: .84rem;
-    line-height: 1.5;
-}
-
-/* Form */
-.form-group {
-    margin-bottom: 14px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    color: #cbd5e1;
-    font-size: .86rem;
-    font-weight: 600;
+.form-group label{
+    display:block;
+    margin-bottom:6px;
+    color:#cbd5e1;
+    font-size:.86rem;
+    font-weight:600;
 }
 
 .form-group input,
-.form-group select {
-    width: 100%;
-    min-height: 46px;
-    padding: 11px 13px;
-    border: 1px solid #334155;
-    border-radius: 11px;
-    outline: none;
-    background: rgba(2,6,23,.85);
-    color: white;
-    font-size: .95rem;
+.form-group select{
+    width:100%;
+    min-height:46px;
+    padding:11px 13px;
+    border:1px solid #334155;
+    border-radius:11px;
+    outline:none;
+    background:#020617;
+    color:white;
+    font-size:.95rem;
 }
 
 .form-group input:focus,
-.form-group select:focus {
-    border-color: #22d3ee;
-    box-shadow: 0 0 0 3px rgba(34,211,238,.1);
+.form-group select:focus{
+    border-color:#22d3ee;
+    box-shadow:0 0 0 3px rgba(34,211,238,.1);
 }
 
-.submit-btn {
-    width: 100%;
-    min-height: 46px;
-    margin-top: 5px;
-    border: 0;
-    border-radius: 11px;
-    background: linear-gradient(135deg, #06b6d4, #2563eb);
-    color: white;
-    font-weight: 800;
-    cursor: pointer;
+.submit-btn{
+    width:100%;
+    min-height:46px;
+    margin-top:5px;
+    border:0;
+    border-radius:11px;
+    background:linear-gradient(135deg,#06b6d4,#2563eb);
+    color:white;
+    font-weight:800;
+    cursor:pointer;
 }
 
-.submit-btn:disabled {
-    opacity: .6;
-    cursor: not-allowed;
+.submit-btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
 }
 
-/* Members toolbar */
-.members-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
+.members-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
 }
 
-.members-toolbar h3 {
-    margin: 0;
+.members-toolbar h3{
+    margin:0;
 }
 
-.refresh-btn {
-    border: 1px solid #334155;
-    border-radius: 9px;
-    background: #0f172a;
-    color: #cbd5e1;
-    padding: 8px 12px;
-    cursor: pointer;
+.refresh-btn{
+    border:1px solid #334155;
+    border-radius:9px;
+    background:#0f172a;
+    color:#cbd5e1;
+    padding:8px 12px;
+    cursor:pointer;
 }
 
-/* Search */
-.search-box {
-    width: 100%;
-    min-height: 44px;
-    margin-bottom: 12px;
-    padding: 10px 13px;
-    border: 1px solid #334155;
-    border-radius: 10px;
-    background: #020617;
-    color: white;
-    outline: none;
+.search-box{
+    width:100%;
+    min-height:44px;
+    margin-bottom:12px;
+    padding:10px 13px;
+    border:1px solid #334155;
+    border-radius:10px;
+    background:#020617;
+    color:white;
+    outline:none;
 }
 
-.search-box:focus {
-    border-color: #22d3ee;
+.table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    border:1px solid #263449;
+    border-radius:12px;
+    background:rgba(2,6,23,.55);
 }
 
-/* Table wrapper */
-.table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    border: 1px solid #263449;
-    border-radius: 12px;
-    background: rgba(2,6,23,.55);
+table{
+    width:100%;
+    min-width:700px;
+    border-collapse:collapse;
 }
 
-table {
-    width: 100%;
-    min-width: 680px;
-    border-collapse: collapse;
+th,td{
+    padding:12px 10px;
+    text-align:left;
+    border-bottom:1px solid #263449;
+    font-size:.86rem;
 }
 
-th,
-td {
-    padding: 12px 10px;
-    text-align: left;
-    border-bottom: 1px solid #263449;
-    font-size: .86rem;
+th{
+    background:#0b1220;
+    color:#67e8f9;
+    font-size:.78rem;
+    text-transform:uppercase;
 }
 
-th {
-    background: #0b1220;
-    color: #67e8f9;
-    font-size: .78rem;
-    text-transform: uppercase;
-    letter-spacing: .04em;
+td{
+    color:#e2e8f0;
 }
 
-td {
-    color: #e2e8f0;
+tr:last-child td{
+    border-bottom:0;
 }
 
-tr:last-child td {
-    border-bottom: 0;
+.badge{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:.72rem;
+    font-weight:700;
 }
 
-/* Badges */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 9px;
-    border-radius: 999px;
-    font-size: .72rem;
-    font-weight: 700;
+.badge-admin{
+    background:rgba(245,158,11,.15);
+    color:#fbbf24;
 }
 
-.badge-admin {
-    background: rgba(245,158,11,.15);
-    color: #fbbf24;
+.badge-member{
+    background:rgba(34,211,238,.12);
+    color:#67e8f9;
 }
 
-.badge-member {
-    background: rgba(34,211,238,.12);
-    color: #67e8f9;
+.badge-success{
+    background:rgba(16,185,129,.15);
+    color:#34d399;
 }
 
-.badge-success {
-    background: rgba(16,185,129,.15);
-    color: #34d399;
+.badge-warning{
+    background:rgba(245,158,11,.15);
+    color:#fbbf24;
 }
 
-.badge-warning {
-    background: rgba(245,158,11,.15);
-    color: #fbbf24;
+.action-buttons{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
 }
 
-/* Action buttons */
-.action-buttons {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
+.action-btn{
+    border:0;
+    border-radius:8px;
+    padding:7px 10px;
+    color:white;
+    cursor:pointer;
+    font-size:.75rem;
+    font-weight:700;
 }
 
-.action-btn {
-    border: 0;
-    border-radius: 8px;
-    padding: 7px 10px;
-    color: white;
-    cursor: pointer;
-    font-size: .75rem;
-    font-weight: 700;
+.edit-btn{
+    background:#2563eb;
 }
 
-.edit-btn {
-    background: #2563eb;
+.delete-btn{
+    background:#dc2626;
 }
 
-.delete-btn {
-    background: #dc2626;
+.action-btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
 }
 
-.action-btn:disabled {
-    opacity: .5;
-    cursor: not-allowed;
+.table-message{
+    padding:25px;
+    text-align:center;
+    color:#94a3b8;
 }
 
-/* Empty/error states */
-.table-message {
-    padding: 25px;
-    text-align: center;
-    color: #94a3b8;
+.error-message{
+    color:#f87171;
 }
 
-.error-message {
-    color: #f87171;
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(8px);
 }
 
-/* Modal */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    background: rgba(0,0,0,.72);
-    backdrop-filter: blur(8px);
+.modal-overlay.active{
+    display:flex;
 }
 
-.modal-overlay.active {
-    display: flex;
+.modal{
+    width:min(500px,100%);
+    max-height:calc(100vh - 36px);
+    overflow-y:auto;
+    padding:22px;
+    border:1px solid rgba(148,163,184,.2);
+    border-radius:20px;
+    background:#0f172a;
+    box-shadow:0 30px 90px rgba(0,0,0,.5);
 }
 
-.modal {
-    width: min(500px, 100%);
-    max-height: calc(100vh - 36px);
-    overflow-y: auto;
-    padding: 22px;
-    border: 1px solid rgba(148,163,184,.2);
-    border-radius: 20px;
-    background: #0f172a;
-    box-shadow: 0 30px 90px rgba(0,0,0,.5);
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
+.modal-header h3{
+    margin:0;
+    color:#67e8f9;
 }
 
-.modal-header h3 {
-    margin: 0;
-    color: #67e8f9;
+.close-modal{
+    width:36px;
+    height:36px;
+    border:0;
+    border-radius:9px;
+    background:#1e293b;
+    color:white;
+    cursor:pointer;
+    font-size:1.1rem;
 }
 
-.close-modal {
-    width: 36px;
-    height: 36px;
-    border: 0;
-    border-radius: 9px;
-    background: #1e293b;
-    color: white;
-    cursor: pointer;
-    font-size: 1.1rem;
+.modal-actions{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
 }
 
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
+.modal-actions button{
+    flex:1;
+    min-height:44px;
+    border:0;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
 }
 
-.modal-actions button {
-    flex: 1;
-    min-height: 44px;
-    border: 0;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
+.cancel-btn{
+    background:#334155;
+    color:white;
 }
 
-.cancel-btn {
-    background: #334155;
-    color: white;
+.save-edit-btn{
+    background:linear-gradient(135deg,#06b6d4,#2563eb);
+    color:white;
 }
 
-.save-edit-btn {
-    background: linear-gradient(135deg, #06b6d4, #2563eb);
-    color: white;
+.temp-password-box{
+    display:none;
+    margin-top:15px;
+    padding:14px;
+    border:1px solid rgba(16,185,129,.35);
+    border-radius:12px;
+    background:rgba(6,78,59,.25);
 }
 
-/* Temporary password box */
-.temp-password-box {
-    display: none;
-    margin-top: 15px;
-    padding: 14px;
-    border: 1px solid rgba(16,185,129,.35);
-    border-radius: 12px;
-    background: rgba(6,78,59,.25);
+.temp-password-box strong{
+    color:#34d399;
 }
 
-.temp-password-box strong {
-    color: #34d399;
+.temp-password{
+    display:block;
+    margin-top:6px;
+    padding:9px;
+    border-radius:8px;
+    background:#020617;
+    color:#67e8f9;
+    font-family:monospace;
+    word-break:break-all;
 }
 
-.temp-password {
-    display: block;
-    margin-top: 6px;
-    padding: 9px;
-    border-radius: 8px;
-    background: #020617;
-    color: #67e8f9;
-    font-family: monospace;
-    word-break: break-all;
-}
-
-/* Mobile */
-@media (max-width: 800px) {
-    .admin-container {
-        width: min(100% - 18px, 700px);
-        margin-top: 10px;
-        padding-bottom: 20px;
+@media(max-width:800px){
+    .admin-container{
+        width:calc(100% - 18px);
+        margin-top:10px;
     }
 
-    .header-bar {
-        align-items: flex-start;
-        flex-direction: column;
-        padding: 16px;
+    .header-bar{
+        align-items:flex-start;
+        flex-direction:column;
+        padding:16px;
     }
 
-    .header-actions {
-        width: 100%;
-        justify-content: stretch;
+    .header-actions{
+        width:100%;
+        flex-direction:column;
     }
 
-    .header-actions .btn {
-        flex: 1;
-        text-align: center;
+    .header-actions .btn{
+        width:100%;
+        text-align:center;
     }
 
-    .stats-grid {
-        grid-template-columns: 1fr;
+    .stats-grid{
+        grid-template-columns:1fr;
     }
 
-    .grid-2 {
-        grid-template-columns: 1fr;
+    .grid-2{
+        grid-template-columns:1fr;
     }
 
-    .admin-card {
-        padding: 16px;
+    .admin-card{
+        padding:16px;
     }
 }
 
-@media (max-width: 430px) {
-    .header-actions {
-        flex-direction: column;
+@media(max-width:430px){
+    .members-toolbar{
+        align-items:flex-start;
+        flex-direction:column;
     }
 
-    .header-actions .btn {
-        width: 100%;
+    .refresh-btn{
+        width:100%;
     }
 
-    .members-toolbar {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .refresh-btn {
-        width: 100%;
-    }
-
-    .modal-actions {
-        flex-direction: column;
+    .modal-actions{
+        flex-direction:column;
     }
 }
 </style>
@@ -532,255 +478,208 @@ tr:last-child td {
 
 <div class="admin-container">
 
-    <header class="header-bar">
-        <div class="header-title">
-            <h1>⚙️ TCC ProjectHub Admin</h1>
-            <p id="adminNameDisplay">Inapakia taarifa za administrator...</p>
-        </div>
+<header class="header-bar">
 
-        <div class="header-actions">
-            <a href="index.html" class="btn btn-workspace">
-                🚀 Workspace
-            </a>
+<div class="header-title">
+<h1>⚙️ TCC ProjectHub Admin</h1>
+<p id="adminNameDisplay">Inapakia taarifa za administrator...</p>
+</div>
 
-            <button type="button" id="logoutBtn" class="btn btn-logout">
-                Logout
-            </button>
-        </div>
-    </header>
+<div class="header-actions">
 
-    <section class="stats-grid">
+<a href="index.html" class="btn btn-workspace">
+🚀 Workspace
+</a>
 
-        <div class="stat-card">
-            <div class="stat-label">Jumla ya Watumiaji</div>
-            <div class="stat-value" id="totalMembers">0</div>
-        </div>
+<button type="button" id="logoutBtn" class="btn btn-logout">
+Logout
+</button>
 
-        <div class="stat-card">
-            <div class="stat-label">Members</div>
-            <div class="stat-value" id="memberCount">0</div>
-        </div>
+</div>
+</header>
 
-        <div class="stat-card">
-            <div class="stat-label">Admins</div>
-            <div class="stat-value" id="adminCount">0</div>
-        </div>
+<section class="stats-grid">
 
-    </section>
+<div class="stat-card">
+<div class="stat-label">Jumla ya Watumiaji</div>
+<div class="stat-value" id="totalMembers">0</div>
+</div>
 
-    <div class="grid-2">
+<div class="stat-card">
+<div class="stat-label">Members</div>
+<div class="stat-value" id="memberCount">0</div>
+</div>
 
-        <section class="admin-card">
+<div class="stat-card">
+<div class="stat-label">Admins</div>
+<div class="stat-value" id="adminCount">0</div>
+</div>
 
-            <h3>➕ Sajili Member Mpya</h3>
+</section>
 
-            <p class="card-description">
-                Admin anaweza kuongeza mtumiaji mpya kwenye mfumo.
-                Mfumo utatengeneza temporary password.
-            </p>
+<div class="grid-2">
 
-            <form id="addMemberForm">
+<section class="admin-card">
 
-                <div class="form-group">
-                    <label for="memberName">Jina Kamili</label>
-                    <input
-                        type="text"
-                        id="memberName"
-                        placeholder="Mf. Ally Mna Ally"
-                        maxlength="120"
-                        required
-                    >
-                </div>
+<h3>➕ Sajili Member Mpya</h3>
 
-                <div class="form-group">
-                    <label for="memberEmail">Barua Pepe</label>
-                    <input
-                        type="email"
-                        id="memberEmail"
-                        placeholder="member@example.com"
-                        maxlength="254"
-                        required
-                    >
-                </div>
+<p class="card-description">
+Admin anaweza kuongeza mtumiaji mpya kwenye mfumo.
+Mfumo utatengeneza temporary password.
+</p>
 
-                <div class="form-group">
-                    <label for="memberRegNo">Reg No</label>
-                    <input
-                        type="text"
-                        id="memberRegNo"
-                        placeholder="Mf. GSMS/2026/001"
-                        maxlength="80"
-                        required
-                    >
-                </div>
+<form id="addMemberForm">
 
-                <button
-                    type="submit"
-                    id="submitBtn"
-                    class="submit-btn"
-                >
-                    ➕ Sajili Member
-                </button>
+<div class="form-group">
+<label for="memberName">Jina Kamili</label>
+<input type="text" id="memberName" placeholder="Mf. Ally Mna Ally" maxlength="120" required>
+</div>
 
-            </form>
+<div class="form-group">
+<label for="memberEmail">Barua Pepe</label>
+<input type="email" id="memberEmail" placeholder="member@example.com" maxlength="254" required>
+</div>
 
-            <div id="tempPasswordBox" class="temp-password-box">
-                <strong>✅ Member amesajiliwa</strong>
-                <div style="color:#cbd5e1;font-size:.82rem;margin-top:5px;">
-                    Temporary password:
-                </div>
-                <span id="temporaryPassword" class="temp-password"></span>
-            </div>
+<div class="form-group">
+<label for="memberRegNo">Reg No</label>
+<input type="text" id="memberRegNo" placeholder="Mf. GSMS/2026/001" maxlength="80" required>
+</div>
 
-        </section>
+<button type="submit" id="submitBtn" class="submit-btn">
+➕ Sajili Member
+</button>
 
-        <section class="admin-card">
+</form>
 
-            <div class="members-toolbar">
-                <h3>👥 Watumiaji wa Mfumo</h3>
+<div id="tempPasswordBox" class="temp-password-box">
+<strong>✅ Member amesajiliwa</strong>
+<div style="color:#cbd5e1;font-size:.82rem;margin-top:5px;">
+Temporary password:
+</div>
+<span id="temporaryPassword" class="temp-password"></span>
+</div>
 
-                <button
-                    type="button"
-                    id="refreshMembersBtn"
-                    class="refresh-btn"
-                >
-                    🔄 Refresh
-                </button>
-            </div>
+</section>
 
-            <input
-                type="search"
-                id="memberSearch"
-                class="search-box"
-                placeholder="🔎 Tafuta kwa jina, email au Reg No..."
-                autocomplete="off"
-            >
+<section class="admin-card">
 
-            <div class="table-wrapper">
+<div class="members-toolbar">
 
-                <table>
+<h3>👥 Watumiaji wa Mfumo</h3>
 
-                    <thead>
-                        <tr>
-                            <th>Mtumiaji</th>
-                            <th>Reg No</th>
-                            <th>Role</th>
-                            <th>Password</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="membersTableBody">
-                        <tr>
-                            <td colspan="5" class="table-message">
-                                Inapakia watumiaji...
-                            </td>
-                        </tr>
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-    </div>
+<button type="button" id="refreshMembersBtn" class="refresh-btn">
+🔄 Refresh
+</button>
 
 </div>
 
-<!-- EDIT MEMBER MODAL -->
+<input
+type="search"
+id="memberSearch"
+class="search-box"
+placeholder="🔎 Tafuta kwa jina, email au Reg No..."
+autocomplete="off"
+>
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+<tr>
+<th>Mtumiaji</th>
+<th>Reg No</th>
+<th>Role</th>
+<th>Password</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="membersTableBody">
+<tr>
+<td colspan="5" class="table-message">
+Inapakia watumiaji...
+</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</div>
+
+</div>
 
 <div id="editModal" class="modal-overlay">
 
-    <div class="modal">
+<div class="modal">
 
-        <div class="modal-header">
+<div class="modal-header">
 
-            <h3>✏️ Edit Member</h3>
+<h3>✏️ Edit Member</h3>
 
-            <button
-                type="button"
-                id="closeEditModal"
-                class="close-modal"
-            >
-                ✕
-            </button>
+<button type="button" id="closeEditModal" class="close-modal">
+✕
+</button>
 
-        </div>
+</div>
 
-        <form id="editMemberForm">
+<form id="editMemberForm">
 
-            <input type="hidden" id="editMemberId">
+<input type="hidden" id="editMemberId">
 
-            <div class="form-group">
-                <label for="editMemberName">Jina Kamili</label>
-                <input
-                    type="text"
-                    id="editMemberName"
-                    maxlength="120"
-                    required
-                >
-            </div>
+<div class="form-group">
+<label for="editMemberName">Jina Kamili</label>
+<input type="text" id="editMemberName" maxlength="120" required>
+</div>
 
-            <div class="form-group">
-                <label for="editMemberEmail">Email</label>
-                <input
-                    type="email"
-                    id="editMemberEmail"
-                    maxlength="254"
-                    required
-                >
-            </div>
+<div class="form-group">
+<label for="editMemberEmail">Email</label>
+<input type="email" id="editMemberEmail" maxlength="254" required>
+</div>
 
-            <div class="form-group">
-                <label for="editMemberRegNo">Reg No</label>
-                <input
-                    type="text"
-                    id="editMemberRegNo"
-                    maxlength="80"
-                    required
-                >
-            </div>
+<div class="form-group">
+<label for="editMemberRegNo">Reg No</label>
+<input type="text" id="editMemberRegNo" maxlength="80" required>
+</div>
 
-            <div class="form-group">
-                <label for="editMemberRole">Role</label>
+<div class="form-group">
+<label for="editMemberRole">Role</label>
 
-                <select id="editMemberRole">
-                    <option value="member">Member</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
+<select id="editMemberRole">
+<option value="member">Member</option>
+<option value="admin">Admin</option>
+</select>
 
-            <div class="modal-actions">
+</div>
 
-                <button
-                    type="button"
-                    id="cancelEditBtn"
-                    class="cancel-btn"
-                >
-                    Ghairi
-                </button>
+<div class="modal-actions">
 
-                <button
-                    type="submit"
-                    id="saveEditBtn"
-                    class="save-edit-btn"
-                >
-                    💾 Hifadhi Mabadiliko
-                </button>
+<button type="button" id="cancelEditBtn" class="cancel-btn">
+Ghairi
+</button>
 
-            </div>
+<button type="submit" id="saveEditBtn" class="save-edit-btn">
+💾 Hifadhi Mabadiliko
+</button>
 
-        </form>
+</div>
 
-    </div>
+</form>
+
+</div>
 
 </div>
 
 <script src="js/config.js"></script>
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
+
 <script>
+
 let adminUser = null;
 let allMembers = [];
 
@@ -801,44 +700,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.logout();
     });
 
-    document.getElementById('refreshMembersBtn').addEventListener(
-        'click',
-        loadMembers
-    );
+    document.getElementById('refreshMembersBtn')
+        .addEventListener('click', loadMembers);
 
-    document.getElementById('memberSearch').addEventListener(
-        'input',
-        renderMembers
-    );
+    document.getElementById('memberSearch')
+        .addEventListener('input', renderMembers);
 
-    document.getElementById('addMemberForm').addEventListener(
-        'submit',
-        addMember
-    );
+    document.getElementById('addMemberForm')
+        .addEventListener('submit', addMember);
 
-    document.getElementById('editMemberForm').addEventListener(
-        'submit',
-        updateMember
-    );
+    document.getElementById('editMemberForm')
+        .addEventListener('submit', updateMember);
 
-    document.getElementById('closeEditModal').addEventListener(
-        'click',
-        closeEditModal
-    );
+    document.getElementById('closeEditModal')
+        .addEventListener('click', closeEditModal);
 
-    document.getElementById('cancelEditBtn').addEventListener(
-        'click',
-        closeEditModal
-    );
+    document.getElementById('cancelEditBtn')
+        .addEventListener('click', closeEditModal);
 
-    document.getElementById('editModal').addEventListener(
-        'click',
-        event => {
+    document.getElementById('editModal')
+        .addEventListener('click', event => {
             if (event.target.id === 'editModal') {
                 closeEditModal();
             }
-        }
-    );
+        });
 
     await loadMembers();
 });
@@ -846,8 +731,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadMembers() {
 
-    const tbody =
-        document.getElementById('membersTableBody');
+    const tbody = document.getElementById('membersTableBody');
 
     tbody.innerHTML = `
         <tr>
@@ -871,7 +755,8 @@ async function loadMembers() {
         tbody.innerHTML = `
             <tr>
                 <td colspan="5" class="table-message error-message">
-                    ❌ Imeshindikana kupakia members: ${escapeHtml(error.message)}
+                    ❌ Imeshindikana kupakia members:
+                    ${escapeHtml(error.message)}
                 </td>
             </tr>
         `;
@@ -881,62 +766,44 @@ async function loadMembers() {
 
 function updateStatistics() {
 
-    const total =
+    document.getElementById('totalMembers').textContent =
         allMembers.length;
 
-    const members =
-        allMembers.filter(
-            user => user.role === 'member'
-        ).length;
-
-    const admins =
-        allMembers.filter(
-            user => user.role === 'admin'
-        ).length;
-
-    document.getElementById('totalMembers').textContent =
-        total;
-
     document.getElementById('memberCount').textContent =
-        members;
+        allMembers.filter(user => user.role === 'member').length;
 
     document.getElementById('adminCount').textContent =
-        admins;
+        allMembers.filter(user => user.role === 'admin').length;
 }
 
 
 function renderMembers() {
 
-    const tbody =
-        document.getElementById('membersTableBody');
+    const tbody = document.getElementById('membersTableBody');
 
     const search =
         document.getElementById('memberSearch')
-            .value
-            .trim()
-            .toLowerCase();
+        .value
+        .trim()
+        .toLowerCase();
 
-    const filtered =
-        allMembers.filter(user => {
+    const filtered = allMembers.filter(user => {
 
-            const name =
-                String(user.full_name || '')
-                    .toLowerCase();
+        const name =
+            String(user.full_name || '').toLowerCase();
 
-            const email =
-                String(user.email || '')
-                    .toLowerCase();
+        const email =
+            String(user.email || '').toLowerCase();
 
-            const regNo =
-                String(user.reg_no || '')
-                    .toLowerCase();
+        const regNo =
+            String(user.reg_no || '').toLowerCase();
 
-            return (
-                name.includes(search) ||
-                email.includes(search) ||
-                regNo.includes(search)
-            );
-        });
+        return (
+            name.includes(search) ||
+            email.includes(search) ||
+            regNo.includes(search)
+        );
+    });
 
     tbody.innerHTML = '';
 
@@ -955,150 +822,105 @@ function renderMembers() {
 
     filtered.forEach(user => {
 
-        const tr =
-            document.createElement('tr');
+        const tr = document.createElement('tr');
 
-        const userCell =
-            document.createElement('td');
+        const userCell = document.createElement('td');
 
-        const name =
-            document.createElement('strong');
+        const name = document.createElement('strong');
+        name.textContent = user.full_name || '—';
 
-        name.textContent =
-            user.full_name || '';
-
-        const email =
-            document.createElement('small');
-
-        email.textContent =
-            user.email || '';
-
+        const email = document.createElement('small');
+        email.textContent = user.email || '';
         email.style.display = 'block';
         email.style.color = '#94a3b8';
-        email.style.marginTop = '3px';
+        email.style.marginTop = '4px';
 
-        userCell.append(
-            name,
-            email
-        );
+        userCell.append(name, email);
 
+        const regCell = document.createElement('td');
+        regCell.textContent = user.reg_no || '—';
 
-        const regCell =
-            document.createElement('td');
+        const roleCell = document.createElement('td');
 
-        regCell.textContent =
-            user.reg_no || '-';
-
-
-        const roleCell =
-            document.createElement('td');
-
-        const roleBadge =
-            document.createElement('span');
+        const roleBadge = document.createElement('span');
 
         roleBadge.className =
             user.role === 'admin'
-                ? 'badge badge-admin'
-                : 'badge badge-member';
+            ? 'badge badge-admin'
+            : 'badge badge-member';
 
         roleBadge.textContent =
             user.role === 'admin'
-                ? 'ADMIN'
-                : 'MEMBER';
+            ? 'ADMIN'
+            : 'MEMBER';
 
-        roleCell.appendChild(
-            roleBadge
-        );
+        roleCell.appendChild(roleBadge);
 
+        const passwordCell = document.createElement('td');
 
-        const passwordCell =
-            document.createElement('td');
-
-        const passwordBadge =
-            document.createElement('span');
+        const passwordBadge = document.createElement('span');
 
         passwordBadge.className =
             user.is_password_changed
-                ? 'badge badge-success'
-                : 'badge badge-warning';
+            ? 'badge badge-success'
+            : 'badge badge-warning';
 
         passwordBadge.textContent =
             user.is_password_changed
-                ? 'Changed'
-                : 'Temporary';
+            ? 'Changed'
+            : 'Temporary';
 
-        passwordCell.appendChild(
-            passwordBadge
-        );
+        passwordCell.appendChild(passwordBadge);
 
+        const actionsCell = document.createElement('td');
 
-        const actionCell =
-            document.createElement('td');
+        const actions = document.createElement('div');
+        actions.className = 'action-buttons';
 
-        const actions =
-            document.createElement('div');
-
-        actions.className =
-            'action-buttons';
-
-
-        const editButton =
-            document.createElement('button');
+        const editButton = document.createElement('button');
 
         editButton.type = 'button';
-        editButton.className =
-            'action-btn edit-btn';
+        editButton.className = 'action-btn edit-btn';
+        editButton.textContent = '✏️ Edit';
 
-        editButton.textContent =
-            '✏️ Edit';
+        editButton.addEventListener('click', () => {
+            openEditModal(user);
+        });
 
-        editButton.addEventListener(
-            'click',
-            () => openEditModal(user)
-        );
+        actions.appendChild(editButton);
 
+        if (user.role !== 'admin') {
 
-        const deleteButton =
-            document.createElement('button');
+            const deleteButton = document.createElement('button');
 
-        deleteButton.type = 'button';
-        deleteButton.className =
-            'action-btn delete-btn';
+            deleteButton.type = 'button';
+            deleteButton.className = 'action-btn delete-btn';
+            deleteButton.textContent = '🗑️ Delete';
 
-        deleteButton.textContent =
-            '🗑️ Delete';
+            deleteButton.addEventListener('click', () => {
+                deleteMember(user, deleteButton);
+            });
 
+            actions.appendChild(deleteButton);
 
-        if (user.role === 'admin') {
+        } else {
 
-            deleteButton.disabled = true;
-            deleteButton.title =
-                'Admin account haiwezi kufutwa hapa.';
+            const adminLabel = document.createElement('small');
+
+            adminLabel.textContent = 'Admin protected';
+            adminLabel.style.color = '#64748b';
+
+            actions.appendChild(adminLabel);
         }
 
-
-        deleteButton.addEventListener(
-            'click',
-            () => deleteMember(user)
-        );
-
-
-        actions.append(
-            editButton,
-            deleteButton
-        );
-
-        actionCell.appendChild(
-            actions
-        );
-
+        actionsCell.appendChild(actions);
 
         tr.append(
             userCell,
             regCell,
             roleCell,
             passwordCell,
-            actionCell
+            actionsCell
         );
 
         tbody.appendChild(tr);
@@ -1113,264 +935,223 @@ async function addMember(event) {
     const button =
         document.getElementById('submitBtn');
 
-    const form =
-        document.getElementById('addMemberForm');
-
-    const fullName =
+    const name =
         document.getElementById('memberName')
-            .value
-            .trim();
+        .value.trim();
 
     const email =
         document.getElementById('memberEmail')
-            .value
-            .trim()
-            .toLowerCase();
+        .value.trim();
 
     const regNo =
         document.getElementById('memberRegNo')
-            .value
-            .trim();
+        .value.trim();
 
-
-    if (!fullName || !email || !regNo) {
-        alert('Jaza taarifa zote za member.');
+    if (!name || !email || !regNo) {
+        alert('Jaza taarifa zote.');
         return;
     }
 
-
     button.disabled = true;
-    button.textContent =
-        '⏳ Inasajili...';
-
+    button.textContent = '⏳ Inasajili...';
 
     try {
 
         const result =
             await window.registerUser({
-                full_name: fullName,
+                full_name: name,
                 email: email,
                 reg_no: regNo
             });
 
-
-        const password =
+        document.getElementById('tempPassword').textContent =
             result.temporaryPassword || '';
 
+        document.getElementById('tempPasswordBox').style.display =
+            'block';
 
-        document.getElementById(
-            'temporaryPassword'
-        ).textContent = password;
-
-        document.getElementById(
-            'tempPasswordBox'
-        ).style.display = 'block';
-
-
-        form.reset();
+        document.getElementById('addMemberForm').reset();
 
         await loadMembers();
 
         alert(
-            `Member ${fullName} amesajiliwa.\n\nTemporary Password:\n${password}`
+            `Member ${name} amesajiliwa.\n\nTemporary Password:\n${result.temporaryPassword}`
         );
 
     } catch (error) {
 
-        console.error(error);
-
         alert(
-            'Imeshindikana kusajili member:\n' +
+            'Imefeli kusajili member:\n' +
             error.message
         );
 
     } finally {
 
         button.disabled = false;
-        button.textContent =
-            '➕ Sajili Member';
+        button.textContent = '➕ Sajili Member';
     }
 }
 
 
 function openEditModal(user) {
 
-    document.getElementById(
-        'editMemberId'
-    ).value = user.id;
+    if (!user) return;
 
-    document.getElementById(
-        'editMemberName'
-    ).value = user.full_name || '';
+    document.getElementById('editMemberId').value =
+        user.id;
 
-    document.getElementById(
-        'editMemberEmail'
-    ).value = user.email || '';
+    document.getElementById('editMemberName').value =
+        user.full_name || '';
 
-    document.getElementById(
-        'editMemberRegNo'
-    ).value = user.reg_no || '';
+    document.getElementById('editMemberEmail').value =
+        user.email || '';
 
-    document.getElementById(
-        'editMemberRole'
-    ).value = user.role || 'member';
+    document.getElementById('editMemberRegNo').value =
+        user.reg_no || '';
 
+    document.getElementById('editMemberRole').value =
+        user.role || 'member';
 
-    document.getElementById(
-        'editModal'
-    ).classList.add('active');
+    document.getElementById('editModal')
+        .classList.add('active');
 }
 
 
 function closeEditModal() {
 
-    document.getElementById(
-        'editModal'
-    ).classList.remove('active');
+    document.getElementById('editModal')
+        .classList.remove('active');
 
-    document.getElementById(
-        'editMemberForm'
-    ).reset();
+    document.getElementById('editMemberForm').reset();
+
 }
-
 
 async function updateMember(event) {
 
     event.preventDefault();
 
-    const button =
-        document.getElementById('saveEditBtn');
+    const button = document.getElementById('saveEditBtn');
 
-    const id =
-        Number(
-            document.getElementById(
-                'editMemberId'
-            ).value
-        );
+    const id = document.getElementById('editMemberId').value;
 
     const full_name =
-        document.getElementById(
-            'editMemberName'
-        ).value.trim();
+        document.getElementById('editMemberName').value.trim();
 
     const email =
-        document.getElementById(
-            'editMemberEmail'
-        ).value.trim().toLowerCase();
+        document.getElementById('editMemberEmail').value.trim();
 
     const reg_no =
-        document.getElementById(
-            'editMemberRegNo'
-        ).value.trim();
+        document.getElementById('editMemberRegNo').value.trim();
 
     const role =
-        document.getElementById(
-            'editMemberRole'
-        ).value;
-
+        document.getElementById('editMemberRole').value;
 
     if (!id || !full_name || !email || !reg_no) {
         alert('Jaza taarifa zote.');
         return;
     }
 
-
     button.disabled = true;
-    button.textContent =
-        '⏳ Inahifadhi...';
-
+    button.textContent = '⏳ Inahifadhi...';
 
     try {
 
-        await window.updateUser({
-            id,
-            full_name,
-            email,
-            reg_no,
-            role
+        const token =
+            sessionStorage.getItem('tcc_access_token');
+
+        const response = await fetch('/api/members/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                userId: Number(id),
+                full_name: full_name,
+                email: email,
+                reg_no: reg_no,
+                role: role
+            })
         });
+
+        const result =
+            await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                result.error || 'Imeshindikana kuhifadhi mabadiliko.'
+            );
+        }
+
+        alert('✅ Taarifa za member zimebadilishwa.');
 
         closeEditModal();
 
         await loadMembers();
 
-        alert(
-            '✅ Taarifa za member zimebadilishwa.'
-        );
-
     } catch (error) {
 
-        console.error(error);
-
         alert(
-            'Imeshindikana ku-edit member:\n' +
+            '❌ Imeshindikana ku-edit member:\n' +
             error.message
         );
 
     } finally {
 
         button.disabled = false;
-        button.textContent =
-            '💾 Hifadhi Mabadiliko';
+        button.textContent = '💾 Hifadhi Mabadiliko';
     }
 }
 
 
-async function deleteMember(user) {
+async function deleteMember(user, button) {
 
-    if (user.role === 'admin') {
-        alert(
-            'Admin account haiwezi kufutwa hapa.'
-        );
+    if (!user || user.role === 'admin') {
+        alert('Admin account haiwezi kufutwa hapa.');
         return;
     }
 
+    const confirmed = confirm(
+        `Una uhakika unataka kufuta:\n\n${user.full_name}\n${user.email}?`
+    );
 
-    const confirmed =
-        confirm(
-            `Una uhakika unataka kumfuta:\n\n${user.full_name}\n${user.email}\n${user.reg_no}?`
-        );
+    if (!confirmed) return;
 
-
-    if (!confirmed) {
-        return;
-    }
-
+    button.disabled = true;
+    button.textContent = '⏳';
 
     try {
 
-        await window.deleteUser(
-            user.id
-        );
+        await window.deleteUser(user.id);
+
+        alert('✅ Member amefutwa.');
 
         await loadMembers();
 
-        alert(
-            '✅ Member amefutwa.'
-        );
-
     } catch (error) {
 
-        console.error(error);
-
         alert(
-            'Imeshindikana kufuta member:\n' +
+            '❌ Imeshindikana kufuta member:\n' +
             error.message
         );
+
+        button.disabled = false;
+        button.textContent = '🗑️ Delete';
     }
 }
 
 
 function escapeHtml(value) {
 
-    const div =
-        document.createElement('div');
-
-    div.textContent =
-        String(value ?? '');
-
-    return div.innerHTML;
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
+
 </script>
+
 </body>
 </html>
