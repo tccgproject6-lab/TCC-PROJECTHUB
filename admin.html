@@ -877,17 +877,19 @@ function renderMembers() {
         const actions = document.createElement('div');
         actions.className = 'action-buttons';
 
-        const editButton = document.createElement('button');
+        if (user.role !== 'admin') {
+            const editButton = document.createElement('button');
 
-        editButton.type = 'button';
-        editButton.className = 'action-btn edit-btn';
-        editButton.textContent = '✏️ Edit';
+            editButton.type = 'button';
+            editButton.className = 'action-btn edit-btn';
+            editButton.textContent = '✏️ Edit';
 
-        editButton.addEventListener('click', () => {
-            openEditModal(user);
-        });
+            editButton.addEventListener('click', () => {
+                openEditModal(user);
+            });
 
-        actions.appendChild(editButton);
+            actions.appendChild(editButton);
+        }
 
         if (user.role !== 'admin') {
 
@@ -964,7 +966,7 @@ async function addMember(event) {
                 reg_no: regNo
             });
 
-        document.getElementById('tempPassword').textContent =
+        document.getElementById('temporaryPassword').textContent =
             result.temporaryPassword || '';
 
         document.getElementById('tempPasswordBox').style.display =

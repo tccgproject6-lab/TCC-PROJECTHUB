@@ -12,11 +12,15 @@
     <script src="https://meet.jit.si/external_api.js"></script>
 
     <style>
+        html, body {
+            min-height: 100%;
+        }
         body {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
             margin: 0;
             font-family: system-ui, -apple-system, sans-serif;
         }
@@ -46,15 +50,35 @@
         /* Main Workspace Grid */
         .workspace {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            min-height: calc(100dvh - 62px);
             flex: 1;
             overflow: hidden;
         }
         @media (max-width: 900px) {
+            .top-nav {
+                padding: 10px 12px;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .user-info {
+                gap: 6px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
             .workspace {
                 grid-template-columns: 1fr;
-                grid-template-rows: 1fr 1fr;
-                overflow-y: auto;
+                grid-template-rows: auto auto;
+                min-height: 0;
+                overflow: visible;
+            }
+            .editor-section {
+                min-height: 72dvh;
+                border-right: 0;
+                border-bottom: 1px solid #334155;
+            }
+            .collab-section {
+                min-height: 72dvh;
             }
         }
 

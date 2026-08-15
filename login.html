@@ -37,7 +37,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const existing = await window.getVerifiedCurrentUser();
-  if (existing) window.redirectBasedOnRole(existing);
+  if (existing) {
+    window.redirectBasedOnRole(existing);
+    return;
+  }
 
   const form = document.getElementById('loginForm');
   const reset = document.getElementById('resetPasswordForm');
