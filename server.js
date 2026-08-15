@@ -678,7 +678,7 @@ async function route(req, res, url) {
       });
     }
 
-    const b = await body(req);
+     b = await body(req);
     const userId = Number(
       b.userId
     );
@@ -730,7 +730,108 @@ async function route(req, res, url) {
       ok: true
     });
   }
+  if (url.pathname === '/api/members/edit' && req.method === 'POST') {
+    const admin = await currentUser(req);
 
+    if (admin.role !== 'admin') {
+      return json(res, 403, {
+        error: 'Admin permission required.'
+      });
+    }
+
+    const b = await body(req);
+
+    const userId = Number(b.userId);
+    const full_name = clean(b.full_name, 120);
+    const email = clean(b.email, 254).toLowerCase();
+    const reg_no = clean(b.reg_no, 80);
+
+    if (!Number.isInteger(userId)) {
+      return json(res, 400, {
+        error: 'User id si sahihi.'
+      });
+    }
+
+    if (!full_name || !email || !reg_no) {
+      return json(res, 400, {
+        error: 'Jina, email na Reg No vinahitajika.'
+      });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return json(res, 400, {
+        error: 'Email si sahihi.'
+      });
+    }
+
+    const { data: target, error: lookupError } = await db
+      .from('users')
+      .select('id,role')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (lookupError) throw lookupError;
+
+    if (!target) {
+      return json(res, 404, {
+        error: 'User not found.'
+      });
+    }
+
+    if (target.role === 'admin') {
+      return json(res, 403, {
+        error: 'Admin account haiwezi kuhaririwa hapa.'
+      });
+    }
+
+    const { data: duplicateEmail, error: emailError } = await db
+      .from('users')
+      .select('id')
+      .ilike('email', email)
+      .neq('id', userId)
+      .maybeSingle();
+
+    if (emailError) throw emailError;
+
+    if (duplicateEmail) {
+      return json(res, 409, {
+        error: 'Email tayari inatumika.'
+      });
+    }
+
+    const { data: duplicateReg, error: regError } = await db
+      .from('users')
+      .select('id')
+      .ilike('reg_no', reg_no)
+      .neq('id', userId)
+      .maybeSingle();
+
+    if (regError) throw regError;
+
+    if (duplicateReg) {
+      return json(res, 409, {
+        error: 'Reg No tayari inatumika.'
+      });
+    }
+
+    const { data, error } = await db
+      .from('users')
+      .update({
+        full_name,
+        email,
+        reg_no
+      })
+      .eq('id', userId)
+      .select('id,auth_user_id,full_name,email,reg_no,role,is_password_changed,created_at')
+      .single();
+
+    if (error) throw error;
+
+    return json(res, 200, {
+      ok: true,
+      user: data
+    });
+  }
   if (
     url.pathname ===
       '/api/saved-code/latest' &&
