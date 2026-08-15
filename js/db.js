@@ -1,25 +1,27 @@
 (function () {
-  if (!window.supabase || !window.APP_CONFIG) {
-    throw new Error('Supabase SDK/config haijapakia.');
-  }
-
-  const token = sessionStorage.getItem('gsms_access_token');
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const client = window.supabase.createClient(window.APP_CONFIG.supabaseUrl, window.APP_CONFIG.supabaseAnonKey, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    global: { headers }
-  });
-
-  window.supabaseClient = client;
-  if (token && client.realtime && typeof client.realtime.setAuth === 'function') client.realtime.setAuth(token);
+  const API = window.APP_CONFIG?.apiBase || '';
 
   async function api(path, options = {}) {
-    const response = await fetch(path, {
+    const token = sessionStorage.getItem('tcc_access_token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const response = await fetch(`${API}${path}`, {
       ...options,
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+      headers,
+      cache: 'no-store'
     });
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.error || 'Request failed');
+    if (!response.ok) {
+      if (response.status === 401) {
+        sessionStorage.removeItem('tcc_access_token');
+        sessionStorage.removeItem('tcc_user');
+      }
+      throw new Error(body.error || 'Request failed');
+    }
     return body;
   }
 
@@ -28,8 +30,8 @@
       method: 'POST',
       body: JSON.stringify({ identifier, password })
     });
-    sessionStorage.setItem('gsms_access_token', result.accessToken);
-    sessionStorage.setItem('gsms_user', JSON.stringify(result.user));
+    sessionStorage.setItem('tcc_access_token', result.accessToken);
+    sessionStorage.setItem('tcc_user', JSON.stringify(result.user));
     return result.user;
   }
 
@@ -41,42 +43,71 @@
     const user = getCurrentUser();
     if (user) {
       user.is_password_changed = true;
-      sessionStorage.setItem('gsms_user', JSON.stringify(user));
+      sessionStorage.setItem('tcc_user', JSON.stringify(user));
     }
     return result;
   }
 
   function getCurrentUser() {
-    try { return JSON.parse(sessionStorage.getItem('gsms_user') || 'null'); } catch { return null; }
+    try { return JSON.parse(sessionStorage.getItem('tcc_user') || 'null'); }
+    catch { return null; }
   }
 
   async function getVerifiedCurrentUser() {
-    const user = getCurrentUser();
-    if (!user || !sessionStorage.getItem('gsms_access_token')) return null;
-    const { data, error } = await client.from('users').select('id,auth_user_id,full_name,email,reg_no,role,is_password_changed,created_at').eq('auth_user_id', user.auth_user_id).maybeSingle();
-    if (error || !data) return null;
-    sessionStorage.setItem('gsms_user', JSON.stringify(data));
-    return data;
+    if (!sessionStorage.getItem('tcc_access_token')) return null;
+    try {
+      const result = await api('/api/me');
+      sessionStorage.setItem('tcc_user', JSON.stringify(result.user));
+      return result.user;
+    } catch {
+      return null;
+    }
   }
 
   async function registerUser(userData) {
-    return api('/api/create-member', { method: 'POST', body: JSON.stringify(userData) });
+    return api('/api/members', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    });
   }
 
   async function getAllMembers() {
-    const { data, error } = await client.from('users').select('id,auth_user_id,full_name,email,reg_no,role,is_password_changed,created_at').order('created_at', { ascending: false });
-    if (error) throw error;
-    return data || [];
+    const result = await api('/api/members');
+    return result.members || [];
   }
 
   async function deleteUser(userId) {
-    return api('/api/delete-member', { method: 'POST', body: JSON.stringify({ userId }) });
+    return api('/api/members/delete', {
+      method: 'POST',
+      body: JSON.stringify({ userId })
+    });
   }
 
-  async function checkAdminExists() {
-    const { data, error } = await client.from('users').select('id').eq('role', 'admin').limit(1);
-    if (error) throw error;
-    return Boolean(data && data.length);
+  async function saveCode(code) {
+    return api('/api/saved-code', {
+      method: 'POST',
+      body: JSON.stringify({ code })
+    });
+  }
+
+  async function loadLatestCode() {
+    return api('/api/saved-code/latest');
+  }
+
+  async function getMessages() {
+    const result = await api('/api/messages');
+    return result.messages || [];
+  }
+
+  async function sendMessage(message) {
+    return api('/api/messages', {
+      method: 'POST',
+      body: JSON.stringify({ message })
+    });
+  }
+
+  async function clearMessages() {
+    return api('/api/messages/clear', { method: 'POST' });
   }
 
   window.loginUser = loginUser;
@@ -86,5 +117,9 @@
   window.registerUser = registerUser;
   window.getAllMembers = getAllMembers;
   window.deleteUser = deleteUser;
-  window.checkAdminExists = checkAdminExists;
+  window.saveCode = saveCode;
+  window.loadLatestCode = loadLatestCode;
+  window.getMessages = getMessages;
+  window.sendMessage = sendMessage;
+  window.clearMessages = clearMessages;
 })();

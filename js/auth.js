@@ -1,10 +1,10 @@
 function clearSession() {
-  sessionStorage.removeItem('gsms_access_token');
-  sessionStorage.removeItem('gsms_user');
+  sessionStorage.removeItem('tcc_access_token');
+  sessionStorage.removeItem('tcc_user');
 }
 
 function getCurrentUser() {
-  try { return JSON.parse(sessionStorage.getItem('gsms_user') || 'null'); } catch { return null; }
+  try { return JSON.parse(sessionStorage.getItem('tcc_user') || 'null'); } catch { return null; }
 }
 
 function logout() {
