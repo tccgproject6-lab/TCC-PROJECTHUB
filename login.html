@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GSMS Hub - Login & Auth</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Supabase JS Client library -->
+    
+    <!-- 1. Supabase JS Client library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -49,32 +50,36 @@
         </div>
     </div>
 
-    <!-- Script ya Kuunganisha Logic -->
-    <script type="module">
-        import { checkAdminExists, registerUser } from './js/db.js';
-        import './js/auth.js';
+    <!-- 2. Pakia Mafaili ya Mfumo kwa Mpangilio Sahihi -->
+    <script src="js/config.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
 
-        // Anzisha ukurasa na kuangalia kama Admin yupo
+    <!-- 3. Dynamic Form Handler Logic -->
+    <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const adminRegisterSection = document.getElementById('adminRegisterSection');
             const loginSection = document.getElementById('loginSection');
 
             try {
-                const hasAdmin = await checkAdminExists();
-                if (!hasAdmin) {
-                    // Kama hakuna Admin, onyesha fomu ya kujisajili Admin
-                    adminRegisterSection.style.display = 'block';
+                // Hakikisha function ipo
+                if (typeof checkAdminExists === 'function') {
+                    const hasAdmin = await checkAdminExists();
+                    if (!hasAdmin) {
+                        adminRegisterSection.style.display = 'block';
+                    } else {
+                        loginSection.style.display = 'block';
+                    }
                 } else {
-                    // Kama Admin yupo, onyesha fomu ya kawaida ya Login
+                    console.warn("checkAdminExists haijafunguka, inafungua Login Section");
                     loginSection.style.display = 'block';
                 }
             } catch (err) {
                 console.error("Error checking admin:", err);
-                // Defaulting to login form if error occurs
                 loginSection.style.display = 'block';
             }
 
-            // Handle Admin Registration Submit
+            // Handling Admin Registration
             const adminRegisterForm = document.getElementById('adminRegisterForm');
             if (adminRegisterForm) {
                 adminRegisterForm.addEventListener('submit', async (e) => {
@@ -85,13 +90,17 @@
                         reg_no: document.getElementById('adminRegNo').value,
                         password: document.getElementById('adminPassword').value,
                         role: 'admin',
-                        is_password_changed: true // Admin anajiwekea password yake mwenyewe
+                        is_password_changed: true
                     };
 
                     try {
-                        await registerUser(userData);
-                        alert('Admin amesajiliwa kikamilifu! Sasa unaweza kuingia.');
-                        window.location.reload(); // Reload ili ionekane Form ya Login
+                        if (typeof registerUser === 'function') {
+                            await registerUser(userData);
+                            alert('Admin amesajiliwa kikamilifu! Sasa unaweza kuingia.');
+                            window.location.reload();
+                        } else {
+                            alert('Error: Function ya usajili (registerUser) haijafikiwa!');
+                        }
                     } catch (err) {
                         alert('Imefeli kusajili Admin: ' + err.message);
                     }
