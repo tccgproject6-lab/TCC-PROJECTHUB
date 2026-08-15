@@ -1059,7 +1059,7 @@ async function updateMember(event) {
         const token =
             sessionStorage.getItem('tcc_access_token');
 
-        const response = await fetch('/api/members/update', {
+        const response = await fetch('/api/members/edit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
