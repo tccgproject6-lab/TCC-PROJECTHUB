@@ -22,9 +22,10 @@
 body {
     background-color: var(--bg-dark);
     color: var(--text-white);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     margin: 0;
     padding: 0;
+    line-height: 1.5;
 }
 
 /* Forms & Inputs */
@@ -38,27 +39,43 @@ input, textarea, select {
     border-radius: 6px;
     outline: none;
     font-size: 0.9rem;
+    transition: border-color 0.2s ease-in-out;
 }
 
 input:focus, textarea:focus, select:focus {
     border-color: var(--accent);
 }
 
-/* Buttons */
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Buttons Base */
 button {
-    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 10px 16px;
     background: var(--accent);
     color: #0f172a;
     border: none;
     border-radius: 6px;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: background 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
 button:hover {
     opacity: 0.9;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Cards (Inatumika kwenye Login & Auth Containers) */
@@ -73,6 +90,25 @@ button:hover {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
+/* Tables Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+th {
+    background: #0f172a;
+    color: var(--accent);
+}
+
 /* Utility Classes */
 .text-muted {
     color: var(--text-muted);
@@ -82,10 +118,26 @@ button:hover {
     color: var(--accent);
 }
 
+.btn-danger {
+    background: var(--danger);
+    color: var(--text-white);
+}
+
+.btn-success {
+    background: var(--success);
+    color: var(--text-white);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: #0f172a;
+}
+
 code {
     background: #090d16;
     color: var(--accent);
     padding: 2px 6px;
     border-radius: 4px;
-    font-family: monospace;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85em;
 }
