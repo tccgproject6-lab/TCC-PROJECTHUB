@@ -3,108 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GSMS Hub - Login & Auth</title>
+    <title>GSMS Hub - Ingia</title>
     <link rel="stylesheet" href="css/style.css">
     
-    <!-- 1. Supabase JS Client library -->
+    <!-- Supabase CDN (Lazima iwe ya kwanza) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
     <div class="card">
-        <h2 style="text-align: center; color: var(--accent);">GSMS Hub</h2>
-        <hr style="border-color: #334155; margin-bottom: 20px;">
+        <h2 style="text-align: center; color: var(--accent); margin-bottom: 5px;">GSMS Hub</h2>
+        <hr style="border-color: var(--border-color); margin-bottom: 20px;">
 
-        <!-- SECTION 1: Admin Initial Registration (Inaonekana mara 1 tu) -->
-        <div id="adminRegisterSection" style="display: none;">
-            <h3 style="margin-top:0;">Sajili Admin wa Mfumo</h3>
-            <p style="font-size: 0.85rem; color: #94a3b8;">Haujaonekana Admin yeyote kwenye mfumo. Sajili akaunti ya kwanza ya Admin.</p>
-            <form id="adminRegisterForm">
-                <input type="text" id="adminName" placeholder="Jina Bufe" required>
-                <input type="email" id="adminEmail" placeholder="Barua Pepe (Email)" required>
-                <input type="text" id="adminRegNo" placeholder="Namba ya Usajili / Reg No" required>
-                <input type="password" id="adminPassword" placeholder="Nenosiri (Password)" required>
-                <button type="submit">Sajili Kama Admin</button>
-            </form>
-        </div>
-
-        <!-- SECTION 2: Standard Login Form -->
-        <div id="loginSection" style="display: none;">
-            <h3 style="margin-top:0;">Ingia Kwenye Mfumo</h3>
+        <!-- LOGIN FORM -->
+        <div id="loginSection">
+            <h3 style="margin-top: 0;">Ingia Kwenye Mfumo</h3>
             <form id="loginForm">
+                <label>Email au Reg No:</label>
                 <input type="text" id="identifier" placeholder="Email au Reg No" required>
-                <input type="password" id="password" placeholder="Nenosiri" required>
-                <button type="submit">Ingia (Login)</button>
-            </form>
-        </div>
 
-        <!-- SECTION 3: Forced Password Reset Form (Kwa walioingia mara ya kwanza) -->
-        <div id="resetPasswordSection" style="display: none;">
-            <h3 style="margin-top:0; color: #f59e0b;">Badilisha Nenosiri</h3>
-            <p style="font-size: 0.85rem; color: #94a3b8;">Hii ni mara yako ya kwanza kuingia. Tafadhali weka nenosiri lako jipya la siri.</p>
-            <form id="resetPasswordForm">
-                <input type="password" id="newPassword" placeholder="Nenosiri Jipya" required minlength="6">
-                <input type="password" id="confirmPassword" placeholder="Rudia Nenosiri Jipya" required minlength="6">
-                <button type="submit" style="background: #f59e0b; color: #000;">Hifadhi Nenosiri Jipya</button>
+                <label>Nenosiri (Password):</label>
+                <input type="password" id="password" placeholder="Nenosiri" required>
+
+                <button type="submit" style="margin-top: 10px;">Ingia (Login)</button>
             </form>
         </div>
     </div>
 
-    <!-- 2. Pakia Mafaili ya Mfumo kwa Mpangilio Sahihi -->
-    <script src="js/config.js"></script>
-    <script src="js/db.js"></script>
-    <script src="js/auth.js"></script>
-
-    <!-- 3. Dynamic Form Handler Logic -->
+    <!-- SCRIPT ZA LOGIC YA DIRECT SUPABASE LOGIN -->
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const adminRegisterSection = document.getElementById('adminRegisterSection');
-            const loginSection = document.getElementById('loginSection');
+        // 1. Supabase Initialization (Inatumia jina gsmsSupabase kuzuia mgongano)
+        const SUPABASE_URL = 'https://exejmvckurtbdtcpjvxn.supabase.co';
+        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZWptdmNrdXJ0YmR0Y3BqdnhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MjY0ODksImV4cCI6MjEwMjMwMjQ4OX0.nY1Xmb6gTi_MkVU8MSEd-tiz_hzuO8gPeOyapXGhsD8';
+
+        // Kutengeneza client rasmi
+        const gsmsSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. Handle Login Form Submit
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const identifier = document.getElementById('identifier').value.trim();
+            const password = document.getElementById('password').value.trim();
 
             try {
-                // Hakikisha function ipo
-                if (typeof checkAdminExists === 'function') {
-                    const hasAdmin = await checkAdminExists();
-                    if (!hasAdmin) {
-                        adminRegisterSection.style.display = 'block';
-                    } else {
-                        loginSection.style.display = 'block';
-                    }
-                } else {
-                    console.warn("checkAdminExists haijafunguka, inafungua Login Section");
-                    loginSection.style.display = 'block';
+                // Query moja kwa moja bila kupita njia ndefu
+                const { data, error } = await gsmsSupabase
+                    .from('users')
+                    .select('*')
+                    .or(`email.eq.${identifier},reg_no.eq.${identifier}`)
+                    .eq('password', password);
+
+                if (error) {
+                    throw error;
                 }
+
+                if (!data || data.length === 0) {
+                    alert('Taarifa ulizoingiza (Reg No/Email au Password) si sahihi!');
+                    return;
+                }
+
+                const user = data[0];
+
+                // Hifadhi user kwenye localStorage
+                localStorage.setItem('currentUser', JSON.stringify(user));
+
+                // Elekeza ukurasa kulingana na Role
+                if (user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+
             } catch (err) {
-                console.error("Error checking admin:", err);
-                loginSection.style.display = 'block';
-            }
-
-            // Handling Admin Registration
-            const adminRegisterForm = document.getElementById('adminRegisterForm');
-            if (adminRegisterForm) {
-                adminRegisterForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const userData = {
-                        full_name: document.getElementById('adminName').value,
-                        email: document.getElementById('adminEmail').value,
-                        reg_no: document.getElementById('adminRegNo').value,
-                        password: document.getElementById('adminPassword').value,
-                        role: 'admin',
-                        is_password_changed: true
-                    };
-
-                    try {
-                        if (typeof registerUser === 'function') {
-                            await registerUser(userData);
-                            alert('Admin amesajiliwa kikamilifu! Sasa unaweza kuingia.');
-                            window.location.reload();
-                        } else {
-                            alert('Error: Function ya usajili (registerUser) haijafikiwa!');
-                        }
-                    } catch (err) {
-                        alert('Imefeli kusajili Admin: ' + err.message);
-                    }
-                });
+                alert('Imefeli kuingia: ' + err.message);
             }
         });
     </script>
