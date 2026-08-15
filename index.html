@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
+    <script>
+  // Kama mtumiaji hajajiandikisha/hajalogin, mpeleke login.html
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (!currentUser) {
+    window.location.href = 'login.html';
+  }
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GSMS Hub - Team Workspace & Live Session</title>
