@@ -1,0 +1,91 @@
+/* css/style.css */
+
+/* Global Variables & Colors */
+:root {
+    --bg-dark: #0f172a;
+    --card-bg: #1e293b;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --text-white: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-white);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Forms & Inputs */
+input, textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #020617;
+    border: 1px solid var(--border-color);
+    color: var(--text-white);
+    margin-bottom: 12px;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    padding: 10px 16px;
+    background: var(--accent);
+    color: #0f172a;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* Cards (Inatumika kwenye Login & Auth Containers) */
+.card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 420px;
+    margin: 80px auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* Utility Classes */
+.text-muted {
+    color: var(--text-muted);
+}
+
+.text-accent {
+    color: var(--accent);
+}
+
+code {
+    background: #090d16;
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+}

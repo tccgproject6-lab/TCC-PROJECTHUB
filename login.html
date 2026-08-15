@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSMS Hub - Login & Auth</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="card">
+        <h2 style="text-align: center; color: var(--accent);">GSMS Hub</h2>
+        <hr style="border-color: #334155; margin-bottom: 20px;">
+
+        <!-- SECTION 1: Admin Initial Registration (Inaonekana mara 1 tu) -->
+        <div id="adminRegisterSection" style="display: none;">
+            <h3 style="margin-top:0;">Sajili Admin wa Mfumo</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8;">Haujaonekana Admin yeyote kwenye mfumo. Sajili akaunti ya kwanza ya Admin.</p>
+            <form id="adminRegisterForm">
+                <input type="text" id="adminName" placeholder="Jina Bufe" required>
+                <input type="email" id="adminEmail" placeholder="Barua Pepe (Email)" required>
+                <input type="text" id="adminRegNo" placeholder="Namba ya Usajili / Reg No" required>
+                <input type="password" id="adminPassword" placeholder="Nenosiri (Password)" required>
+                <button type="submit">Sajili Kama Admin</button>
+            </form>
+        </div>
+
+        <!-- SECTION 2: Standard Login Form -->
+        <div id="loginSection" style="display: none;">
+            <h3 style="margin-top:0;">Ingia Kwenye Mfumo</h3>
+            <form id="loginForm">
+                <input type="text" id="identifier" placeholder="Email au Reg No" required>
+                <input type="password" id="password" placeholder="Nenosiri" required>
+                <button type="submit">Ingia (Login)</button>
+            </form>
+        </div>
+
+        <!-- SECTION 3: Forced Password Reset Form (Kwa walioingia mara ya kwanza) -->
+        <div id="resetPasswordSection" style="display: none;">
+            <h3 style="margin-top:0; color: #f59e0b;">Badilisha Nenosiri</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8;">Hii ni mara yako ya kwanza kuingia. Tafadhali weka nenosiri lako jipya la siri.</p>
+            <form id="resetPasswordForm">
+                <input type="password" id="newPassword" placeholder="Nenosiri Jipya" required minlength="6">
+                <input type="password" id="confirmPassword" placeholder="Rudia Nenosiri Jipya" required minlength="6">
+                <button type="submit" style="background: #f59e0b; color: #000;">Hifadhi Nenosiri Jipya</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script ya Kuunganisha Logic -->
+    <script type="module">
+        import { checkAdminExists, registerUser } from './js/db.js';
+        import './js/auth.js';
+
+        // Anzisha ukurasa na kuangalia kama Admin yupo
+        document.addEventListener('DOMContentLoaded', async () => {
+            const adminRegisterSection = document.getElementById('adminRegisterSection');
+            const loginSection = document.getElementById('loginSection');
+
+            try {
+                const hasAdmin = await checkAdminExists();
+                if (!hasAdmin) {
+                    // Kama hakuna Admin, onyesha fomu ya kujisajili Admin
+                    adminRegisterSection.style.display = 'block';
+                } else {
+                    // Kama Admin yupo, onyesha fomu ya kawaida ya Login
+                    loginSection.style.display = 'block';
+                }
+            } catch (err) {
+                console.error("Error checking admin:", err);
+                // Defaulting to login form if error occurs
+                loginSection.style.display = 'block';
+            }
+
+            // Handle Admin Registration Submit
+            const adminRegisterForm = document.getElementById('adminRegisterForm');
+            if (adminRegisterForm) {
+                adminRegisterForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const userData = {
+                        full_name: document.getElementById('adminName').value,
+                        email: document.getElementById('adminEmail').value,
+                        reg_no: document.getElementById('adminRegNo').value,
+                        password: document.getElementById('adminPassword').value,
+                        role: 'admin',
+                        is_password_changed: true // Admin anajiwekea password yake mwenyewe
+                    };
+
+                    try {
+                        await registerUser(userData);
+                        alert('Admin amesajiliwa kikamilifu! Sasa unaweza kuingia.');
+                        window.location.reload(); // Reload ili ionekane Form ya Login
+                    } catch (err) {
+                        alert('Imefeli kusajili Admin: ' + err.message);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
