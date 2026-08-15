@@ -1,20 +1,18 @@
 // js/db.js
 
-// 1. Kuhakikisha Supabase Client imeundwa na ipo tayari
-let supabase = null;
+// 1. Kutengeneza Supabase Client na kuzuia Overwriting
+const url = window.SUPABASE_URL || 'https://exejmvckurtbdtcpjvxn.supabase.co';
+const key = window.SUPABASE_KEY || 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZWptdmNrdXJ0YmR0Y3BqdnhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MjY0ODksImV4cCI6MjEwMjMwMjQ4OX0.nY1Xmb6gTi_MkVU8MSEd-tiz_hzuO8gPeOyapXGhsD8';
 
-if (typeof window.supabaseClient !== 'undefined') {
-    supabase = window.supabaseClient;
-} else if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
-    const url = window.SUPABASE_URL || 'YOUR_SUPABASE_URL';
-    const key = window.SUPABASE_KEY || 'YOUR_SUPABASE_KEY';
-    supabase = window.supabase.createClient(url, key);
-    window.supabase = supabase; // Hifadhi global instance
-}
+// Tumia createClient kikamilifu
+const client = window.supabase.createClient(url, key);
 
-// 2. Angalia kama Admin yupo
+// Hifadhi kwenye window kama dbClient au supabaseClient
+window.supabaseClient = client;
+
+// 2. Query Functions
 async function checkAdminExists() {
-    const { data, error } = await supabase
+    const { data, error } = await client
         .from('users')
         .select('*')
         .eq('role', 'admin');
@@ -22,9 +20,8 @@ async function checkAdminExists() {
     return data && data.length > 0;
 }
 
-// 3. Sajili User Mpya
 async function registerUser(userData) {
-    const { data, error } = await supabase
+    const { data, error } = await client
         .from('users')
         .insert([userData])
         .select();
@@ -32,9 +29,8 @@ async function registerUser(userData) {
     return data[0];
 }
 
-// 4. Ingingia Mfumo (Login)
 async function loginUser(emailOrReg, password) {
-    const { data, error } = await supabase
+    const { data, error } = await client
         .from('users')
         .select('*')
         .or(`email.eq.${emailOrReg},reg_no.eq.${emailOrReg}`)
@@ -44,9 +40,8 @@ async function loginUser(emailOrReg, password) {
     return (data && data.length > 0) ? data[0] : null;
 }
 
-// 5. Badilisha Password
 async function updatePassword(userId, newPassword) {
-    const { error } = await supabase
+    const { error } = await client
         .from('users')
         .update({ password: newPassword, is_password_changed: true })
         .eq('id', userId);
@@ -54,9 +49,8 @@ async function updatePassword(userId, newPassword) {
     return true;
 }
 
-// 6. Leta Wanachama Wote
 async function getAllMembers() {
-    const { data, error } = await supabase
+    const { data, error } = await client
         .from('users')
         .select('*')
         .order('created_at', { ascending: false });
@@ -64,9 +58,8 @@ async function getAllMembers() {
     return data || [];
 }
 
-// 7. Futa User
 async function deleteUser(userId) {
-    const { error } = await supabase
+    const { error } = await client
         .from('users')
         .delete()
         .eq('id', userId);
@@ -74,8 +67,7 @@ async function deleteUser(userId) {
     return true;
 }
 
-// Attach kila function kwenye Window Object kwa ajili ya Global Access
-window.supabase = supabase;
+// Global Exports
 window.checkAdminExists = checkAdminExists;
 window.registerUser = registerUser;
 window.loginUser = loginUser;
