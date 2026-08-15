@@ -1,14 +1,35 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
+    <!-- Redirect Guard: Hakikisha aliyelogin yupo na ni Admin -->
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        } else if (currentUser.role !== 'admin') {
+            alert('Huna ruhusa ya kufungua ukurasa huu!');
+            window.location.href = 'index.html';
+        }
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GSMS Hub - Admin Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
         .admin-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 40px auto;
             padding: 20px;
         }
@@ -16,7 +37,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--card-bg);
+            background: #1e293b;
             padding: 15px 20px;
             border-radius: 8px;
             border: 1px solid #334155;
@@ -30,6 +51,33 @@
         @media (max-width: 768px) {
             .grid-2 { grid-template-columns: 1fr; }
         }
+        form label {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+        form input {
+            width: 100%;
+            padding: 8px 12px;
+            margin-top: 4px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        form button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            background: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -41,7 +89,7 @@
             border-bottom: 1px solid #334155;
             font-size: 0.9rem;
         }
-        th { background: #0f172a; color: var(--accent); }
+        th { background: #0f172a; color: #38bdf8; }
         .btn-danger {
             background: #ef4444;
             color: white;
@@ -50,6 +98,7 @@
             border: none;
             cursor: pointer;
             width: auto;
+            font-size: 0.8rem;
         }
         .btn-nav {
             background: #10b981;
@@ -58,11 +107,13 @@
             text-decoration: none;
             border-radius: 6px;
             font-weight: bold;
+            font-size: 0.85rem;
         }
         .badge {
             padding: 3px 8px;
             border-radius: 12px;
             font-size: 0.75rem;
+            display: inline-block;
         }
         .badge-success { background: #065f46; color: #34d399; }
         .badge-warning { background: #78350f; color: #fbbf24; }
@@ -71,41 +122,41 @@
 <body>
 
     <div class="admin-container">
-        <!-- Header -->
+        <!-- Header Bar -->
         <div class="header-bar">
             <div>
-                <h2 style="margin: 0; color: var(--accent);">Admin Panel - GSMS Hub</h2>
+                <h2 style="margin: 0; color: #38bdf8;">Admin Panel - GSMS Hub</h2>
                 <small id="adminNameDisplay" style="color: #94a3b8;"></small>
             </div>
             <div>
                 <a href="index.html" class="btn-nav">🚀 Nenda Workspace</a>
-                <button id="logoutBtn" style="width: auto; margin-left: 10px; background: #64748b; color: white;">Logout</button>
+                <button id="logoutBtn" style="width: auto; margin-left: 10px; background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">Logout</button>
             </div>
         </div>
 
         <div class="grid-2">
             <!-- Form ya Kusajili Member Mpya -->
-            <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid #334155;">
-                <h3 style="margin-top: 0;">Sajili Member Mpya</h3>
+            <div style="background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155;">
+                <h3 style="margin-top: 0; color: #38bdf8;">Sajili Member Mpya</h3>
                 <p style="font-size: 0.8rem; color: #94a3b8;">Default Password itakuwa: <code>123456</code></p>
                 
                 <form id="addMemberForm">
-                    <label style="font-size: 0.85rem;">Jina Bufe:</label>
+                    <label>Jina Bufe:</label>
                     <input type="text" id="memberName" placeholder="Mf. Ally Mna Ally" required>
 
-                    <label style="font-size: 0.85rem;">Barua Pepe (Email):</label>
+                    <label>Barua Pepe (Email):</label>
                     <input type="email" id="memberEmail" placeholder="mwanachama@gsms.com" required>
 
-                    <label style="font-size: 0.85rem;">Reg No / Namba ya Usajili:</label>
+                    <label>Reg No / Namba ya Usajili:</label>
                     <input type="text" id="memberRegNo" placeholder="Mf. GSMS/2026/001" required>
 
-                    <button type="submit">Sajili Member</button>
+                    <button type="submit" id="submitBtn">Sajili Member</button>
                 </form>
             </div>
 
             <!-- Table ya Members Waliopo -->
-            <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid #334155;">
-                <h3 style="margin-top: 0;">Orodha ya Watumiaji</h3>
+            <div style="background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155;">
+                <h3 style="margin-top: 0; color: #38bdf8;">Orodha ya Watumiaji</h3>
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
@@ -126,23 +177,35 @@
         </div>
     </div>
 
-    <script type="module">
-        import { requireAuth, logout } from './js/auth.js';
-        import { registerUser, getAllMembers, deleteUser } from './js/db.js';
+    <!-- Pakia Mafaili ya Mfumo -->
+    <script src="js/config.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+
+    <!-- Admin Logic Scripts -->
+    <script>
+        let adminUser = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Guard: Hakikisha aliyelogin ni Admin
-            const user = requireAuth();
-            if (!user || user.role !== 'admin') {
+            adminUser = JSON.parse(localStorage.getItem('currentUser'));
+
+            if (!adminUser || adminUser.role !== 'admin') {
                 alert('Huna ruhusa ya kufungua ukurasa huu!');
                 window.location.href = 'index.html';
                 return;
             }
 
-            document.getElementById('adminNameDisplay').textContent = `Logged in as: ${user.full_name} (${user.reg_no})`;
+            document.getElementById('adminNameDisplay').textContent = `Logged in as: ${adminUser.full_name} (${adminUser.reg_no})`;
 
             // Logout Event
-            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                if (typeof logout === 'function') {
+                    logout();
+                } else {
+                    localStorage.removeItem('currentUser');
+                    window.location.href = 'login.html';
+                }
+            });
 
             // Load Members Table
             await loadMembers();
@@ -151,22 +214,37 @@
             const addMemberForm = document.getElementById('addMemberForm');
             addMemberForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Inasajili...';
+
                 const newMember = {
-                    full_name: document.getElementById('memberName').value,
-                    email: document.getElementById('memberEmail').value,
-                    reg_no: document.getElementById('memberRegNo').value,
-                    password: '123456', // Default password
+                    full_name: document.getElementById('memberName').value.trim(),
+                    email: document.getElementById('memberEmail').value.trim(),
+                    reg_no: document.getElementById('memberRegNo').value.trim(),
+                    password: '123456',
                     role: 'member',
                     is_password_changed: false
                 };
 
                 try {
-                    await registerUser(newMember);
+                    if (typeof registerUser === 'function') {
+                        await registerUser(newMember);
+                    } else if (typeof supabase !== 'undefined') {
+                        const { error } = await supabase.from('users').insert([newMember]);
+                        if (error) throw error;
+                    } else {
+                        throw new Error("Supabase haipatikani!");
+                    }
+
                     alert(`Member ${newMember.full_name} amesajiliwa! Password yake ni 123456.`);
                     addMemberForm.reset();
                     await loadMembers();
                 } catch (err) {
                     alert('Imefeli kusajili member: ' + err.message);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Sajili Member';
                 }
             });
         });
@@ -176,8 +254,21 @@
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Inapakia watumiaji...</td></tr>';
 
             try {
-                const members = await getAllMembers();
+                let members = [];
+                if (typeof getAllMembers === 'function') {
+                    members = await getAllMembers();
+                } else if (typeof supabase !== 'undefined') {
+                    const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+                    if (error) throw error;
+                    members = data || [];
+                }
+
                 tbody.innerHTML = '';
+
+                if (members.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Hakuna wanachama waliopatikana.</td></tr>';
+                    return;
+                }
 
                 members.forEach(m => {
                     const tr = document.createElement('tr');
@@ -188,7 +279,7 @@
                     tr.innerHTML = `
                         <td><b>${m.reg_no}</b><br><small style="color:#94a3b8">${m.email}</small></td>
                         <td>${m.full_name}</td>
-                        <td><span style="color: ${m.role === 'admin' ? '#38bdf8' : '#cbd5e1'}">${m.role.toUpperCase()}</span></td>
+                        <td><span style="color: ${m.role === 'admin' ? '#38bdf8' : '#cbd5e1'}; font-weight: bold;">${m.role.toUpperCase()}</span></td>
                         <td>${passStatus}</td>
                         <td>
                             ${m.role !== 'admin' 
@@ -205,7 +296,12 @@
                         const id = e.target.getAttribute('data-id');
                         if (confirm('Je, una uhakika unataka kufuta member huyu?')) {
                             try {
-                                await deleteUser(id);
+                                if (typeof deleteUser === 'function') {
+                                    await deleteUser(id);
+                                } else if (typeof supabase !== 'undefined') {
+                                    const { error } = await supabase.from('users').delete().eq('id', id);
+                                    if (error) throw error;
+                                }
                                 await loadMembers();
                             } catch (err) {
                                 alert('Imefeli kufuta: ' + err.message);
@@ -215,7 +311,7 @@
                 });
 
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="color: #ef4444; text-align: center;">Error: ${err.message}</td></tr>`;
             }
         }
     </script>
