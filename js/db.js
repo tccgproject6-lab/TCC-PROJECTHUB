@@ -109,17 +109,24 @@
   async function clearMessages() {
     return api('/api/messages/clear', { method: 'POST' });
   }
+  async function updateUser(userData) {
+    return api('/api/members/update', {
+        method: 'POST',
+        body: JSON.stringify(userData)
+    });
+}
 
-  window.loginUser = loginUser;
-  window.updatePassword = updatePassword;
-  window.getCurrentUser = getCurrentUser;
-  window.getVerifiedCurrentUser = getVerifiedCurrentUser;
-  window.registerUser = registerUser;
-  window.getAllMembers = getAllMembers;
-  window.deleteUser = deleteUser;
-  window.saveCode = saveCode;
-  window.loadLatestCode = loadLatestCode;
-  window.getMessages = getMessages;
-  window.sendMessage = sendMessage;
-  window.clearMessages = clearMessages;
+window.loginUser = loginUser;
+window.updatePassword = updatePassword;
+window.getCurrentUser = getCurrentUser;
+window.getVerifiedCurrentUser = getVerifiedCurrentUser;
+window.registerUser = registerUser;
+window.getAllMembers = getAllMembers;
+window.deleteUser = deleteUser;
+window.updateUser = updateUser;
+window.saveCode = saveCode;
+window.loadLatestCode = loadLatestCode;
+window.getMessages = getMessages;
+window.sendMessage = sendMessage;
+window.clearMessages = clearMessages;
 })();
