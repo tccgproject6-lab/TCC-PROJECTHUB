@@ -8,9 +8,6 @@
     <title>GSMS Hub - Team Workspace & Live Session</title>
     <link rel="stylesheet" href="css/style.css">
     
-    <!-- 1. Supabase JS Client library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <!-- 2. Jitsi External API za Live Video/Screen Share -->
     <script src="https://meet.jit.si/external_api.js"></script>
 
@@ -198,7 +195,7 @@
     <!-- Top Navigation -->
     <div class="top-nav">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <h3 style="margin: 0; color: #38bdf8;">GSMS Workspace</h3>
+            <div><h3 style="margin: 0;">TCC ProjectHub</h3><small class="brand-subtitle">Secure Team Workspace</small></div>
         </div>
         <div class="user-info">
             <div class="user-badge" id="userInfoDisplay">Inapakia...</div>
@@ -332,17 +329,8 @@
                 if (!code.trim()) return alert('Tafadhali andika kodi kwanza!');
 
                 try {
-                    if (window.supabaseClient) {
-                        const { error } = await window.supabaseClient.from('saved_codes').insert([{
-                            owner_id: loggedUser.id || null,
-                            owner_auth_id: loggedUser.auth_user_id,
-                            code_content: code
-                        }]);
-                        if (error) throw error;
-                        alert('Kodi imehifadhiwa kwenye Cloud!');
-                    } else {
-                        alert('Error: Supabase haijaunganishwa!');
-                    }
+                    await window.saveCode(code);
+                    alert('Kodi imehifadhiwa salama kwenye Cloud!');
                 } catch (err) {
                     alert('Imefeli ku-save: ' + err.message);
                 }
@@ -350,22 +338,13 @@
 
             document.getElementById('loadBtn').addEventListener('click', async () => {
                 try {
-                    if (window.supabaseClient) {
-                        const { data, error } = await window.supabaseClient
-                            .from('saved_codes')
-                            .select('*')
-                            .eq('owner_auth_id', loggedUser.auth_user_id)
-                            .order('updated_at', { ascending: false })
-                            .limit(1);
-
-                        if (error) throw error;
-                        if (data && data.length > 0) {
-                            editor.value = data[0].code_content;
-                            preview.srcdoc = data[0].code_content;
-                            alert('Kodi ya mwisho imepakuliwa!');
-                        } else {
-                            alert('Hakuna kodi iliyohifadhiwa bado.');
-                        }
+                    const result = await window.loadLatestCode();
+                    if (result.code) {
+                        editor.value = result.code;
+                        preview.srcdoc = result.code;
+                        alert('Kodi ya mwisho imepakuliwa!');
+                    } else {
+                        alert('Hakuna kodi iliyohifadhiwa bado.');
                     }
                 } catch (err) {
                     alert('Imefeli ku-load: ' + err.message);
@@ -380,13 +359,12 @@
             const sendBtn = document.getElementById('sendMsgBtn');
 
             async function loadMessages() {
-                if (!window.supabaseClient) return;
-                const { data, error } = await window.supabaseClient.from('messages').select('*').order('created_at', { ascending: true });
-                if (error) return console.error(error);
-
-                chatBox.innerHTML = '';
-                if (data) {
-                    data.forEach(msg => appendMessageUI(msg));
+                try {
+                    const messages = await window.getMessages();
+                    chatBox.innerHTML = '';
+                    messages.forEach(msg => appendMessageUI(msg));
+                } catch (error) {
+                    console.error(error);
                 }
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
@@ -409,14 +387,11 @@
                 if (!text) return;
 
                 input.value = '';
-                if (window.supabaseClient) {
-                    const { error } = await window.supabaseClient.from('messages').insert([{
-                        sender_name: loggedUser.full_name,
-                        sender_auth_id: loggedUser.auth_user_id,
-                        message_text: text
-                    }]);
-
-                    if (error) alert('Imefeli kutuma SMS: ' + error.message);
+                try {
+                    await window.sendMessage(text);
+                    await loadMessages();
+                } catch (error) {
+                    alert('Imefeli kutuma ujumbe: ' + error.message);
                 }
             });
 
@@ -426,27 +401,19 @@
 
             document.getElementById('clearChatBtn').addEventListener('click', async () => {
                 const confirmation = prompt("Andika 'FUTA' ili kudhibitisha kusafisha chat zote:");
-                if (confirmation === 'FUTA' && window.supabaseClient) {
-                    await window.supabaseClient.from('messages').delete().neq('id', 0);
-                    chatBox.innerHTML = '';
+                if (confirmation === 'FUTA') {
+                    try {
+                        await window.clearMessages();
+                        chatBox.innerHTML = '';
+                    } catch (error) {
+                        alert('Huna ruhusa au chat haijafutika: ' + error.message);
+                    }
                 }
             });
 
-            // Realtime Listener
-            if (window.supabaseClient) {
-                window.supabaseClient
-                    .channel('public:messages')
-                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                        appendMessageUI(payload.new);
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    })
-                    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, () => {
-                        loadMessages();
-                    })
-                    .subscribe();
-
-                await loadMessages();
-            }
+            // Secure polling keeps the chat server-controlled without exposing database credentials.
+            await loadMessages();
+            setInterval(loadMessages, 5000);
         }
 
         // --- 3. LIVE JITSI VIDEO MEETING ---
