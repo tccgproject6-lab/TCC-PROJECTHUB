@@ -59,77 +59,14 @@ alter table public.users enable row level security;
 alter table public.saved_codes enable row level security;
 alter table public.messages enable row level security;
 
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (select 1 from public.users where auth_user_id = auth.uid() and role = 'admin');
-$$;
-
-revoke all on function public.is_admin() from public;
-grant execute on function public.is_admin() to authenticated;
-
+-- The browser never receives the Supabase service-role key and does not access these tables directly.
+-- All database operations go through the Render server.
 revoke all on public.users from anon, authenticated;
 revoke all on public.saved_codes from anon, authenticated;
 revoke all on public.messages from anon, authenticated;
-grant select on public.users to authenticated;
-grant select, insert, update, delete on public.saved_codes to authenticated;
-grant select, insert, delete on public.messages to authenticated;
-
-drop policy if exists users_select_self on public.users;
-drop policy if exists users_select_admin on public.users;
-drop policy if exists saved_codes_select_own on public.saved_codes;
-drop policy if exists saved_codes_insert_own on public.saved_codes;
-drop policy if exists saved_codes_update_own on public.saved_codes;
-drop policy if exists saved_codes_delete_own on public.saved_codes;
-drop policy if exists messages_select_auth on public.messages;
-drop policy if exists messages_insert_self on public.messages;
-drop policy if exists messages_delete_admin on public.messages;
-
-create policy users_select_self on public.users
-for select to authenticated
-using (auth_user_id = auth.uid());
-
-create policy users_select_admin on public.users
-for select to authenticated
-using (public.is_admin());
-
-create policy saved_codes_select_own on public.saved_codes
-for select to authenticated
-using (owner_auth_id = auth.uid());
-
-create policy saved_codes_insert_own on public.saved_codes
-for insert to authenticated
-with check (owner_auth_id = auth.uid());
-
-create policy saved_codes_update_own on public.saved_codes
-for update to authenticated
-using (owner_auth_id = auth.uid())
-with check (owner_auth_id = auth.uid());
-
-create policy saved_codes_delete_own on public.saved_codes
-for delete to authenticated
-using (owner_auth_id = auth.uid());
-
-create policy messages_select_auth on public.messages
-for select to authenticated
-using (true);
-
-create policy messages_insert_self on public.messages
-for insert to authenticated
-with check (sender_auth_id = auth.uid());
-
-create policy messages_delete_admin on public.messages
-for delete to authenticated
-using (public.is_admin());
 
 create or replace function public.touch_saved_code_updated_at()
-returns trigger
-language plpgsql
-security invoker
+returns trigger language plpgsql security invoker set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -142,22 +79,9 @@ create trigger saved_codes_touch_updated_at
 before update on public.saved_codes
 for each row execute function public.touch_saved_code_updated_at();
 
--- Enable Realtime for team chat if it is not already enabled.
-do $$
-begin
-  begin
-    alter publication supabase_realtime add table public.messages;
-  exception when duplicate_object then
-    null;
-  when undefined_object then
-    null;
-  end;
-end $$;
-
--- If your old system has no admin account, this creates one.
+-- Create the first admin only if one does not exist.
 -- Login: admin@gsms.local OR ADMIN/2026/001
 -- Temporary password: Admin@12345
--- Change it immediately after the first login.
 insert into public.users (auth_user_id, full_name, email, reg_no, password, password_hash, role, is_password_changed)
 select gen_random_uuid(), 'System Administrator', 'admin@gsms.local', 'ADMIN/2026/001', null,
 'scrypt$16384$8$1$UCnymkm-w91Dm7UJFbfy-A$NEK0sMzl2bCZnr2bfz0B6Hi6HYfQrxrJVvOiV1v5NmiaZE3rgen6rFaGMH-XtiDyGH0eEcmjKYfuhvrH4updoA', 'admin', false
