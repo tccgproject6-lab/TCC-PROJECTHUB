@@ -1,20 +1,29 @@
 // js/db.js
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
-// Initialize Supabase Client
-export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 1. Kuhakikisha Supabase Client imeundwa na ipo tayari
+let supabase = null;
 
-// User Queries
-export async function checkAdminExists() {
+if (typeof window.supabaseClient !== 'undefined') {
+    supabase = window.supabaseClient;
+} else if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
+    const url = window.SUPABASE_URL || 'YOUR_SUPABASE_URL';
+    const key = window.SUPABASE_KEY || 'YOUR_SUPABASE_KEY';
+    supabase = window.supabase.createClient(url, key);
+    window.supabase = supabase; // Hifadhi global instance
+}
+
+// 2. Angalia kama Admin yupo
+async function checkAdminExists() {
     const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('role', 'admin');
     if (error) throw error;
-    return data.length > 0;
+    return data && data.length > 0;
 }
 
-export async function registerUser(userData) {
+// 3. Sajili User Mpya
+async function registerUser(userData) {
     const { data, error } = await supabase
         .from('users')
         .insert([userData])
@@ -23,7 +32,8 @@ export async function registerUser(userData) {
     return data[0];
 }
 
-export async function loginUser(emailOrReg, password) {
+// 4. Ingingia Mfumo (Login)
+async function loginUser(emailOrReg, password) {
     const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -31,11 +41,12 @@ export async function loginUser(emailOrReg, password) {
         .eq('password', password);
         
     if (error) throw error;
-    return data[0] || null;
+    return (data && data.length > 0) ? data[0] : null;
 }
 
-export async function updatePassword(userId, newPassword) {
-    const { data, error } = await supabase
+// 5. Badilisha Password
+async function updatePassword(userId, newPassword) {
+    const { error } = await supabase
         .from('users')
         .update({ password: newPassword, is_password_changed: true })
         .eq('id', userId);
@@ -43,16 +54,18 @@ export async function updatePassword(userId, newPassword) {
     return true;
 }
 
-export async function getAllMembers() {
+// 6. Leta Wanachama Wote
+async function getAllMembers() {
     const { data, error } = await supabase
         .from('users')
         .select('*')
         .order('created_at', { ascending: false });
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
-export async function deleteUser(userId) {
+// 7. Futa User
+async function deleteUser(userId) {
     const { error } = await supabase
         .from('users')
         .delete()
@@ -60,3 +73,12 @@ export async function deleteUser(userId) {
     if (error) throw error;
     return true;
 }
+
+// Attach kila function kwenye Window Object kwa ajili ya Global Access
+window.supabase = supabase;
+window.checkAdminExists = checkAdminExists;
+window.registerUser = registerUser;
+window.loginUser = loginUser;
+window.updatePassword = updatePassword;
+window.getAllMembers = getAllMembers;
+window.deleteUser = deleteUser;
