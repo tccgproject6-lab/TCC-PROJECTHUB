@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSMS Hub - Team Workspace & Live Session</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 1. Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 2. Jitsi External API za Live Video/Screen Share -->
+    <script src="https://meet.jit.si/external_api.js"></script>
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        /* Top Navigation Header */
+        .top-nav {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-badge {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #38bdf8;
+        }
+
+        /* Main Workspace Grid */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+        @media (max-width: 900px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+                overflow-y: auto;
+            }
+        }
+
+        /* Left Side: Code Editor */
+        .editor-section {
+            background: #0f172a;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            gap: 10px;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            width: auto;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        textarea#codeEditor {
+            flex: 1;
+            background: #020617;
+            color: #38bdf8;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            padding: 12px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            resize: none;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            outline: none;
+        }
+        iframe#previewFrame {
+            height: 35%;
+            background: white;
+            border: 1px solid #334155;
+            border-radius: 6px;
+        }
+
+        /* Right Side: Chat & Video Session Panel */
+        .collab-section {
+            background: #1e293b;
+            display: flex;
+            flex-direction: column;
+        }
+        .tabs {
+            display: flex;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab-btn.active {
+            color: #38bdf8;
+            border-bottom-color: #38bdf8;
+            background: #1e293b;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            padding: 15px;
+            overflow: hidden;
+        }
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Chat Styles */
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        .chat-bubble.mine {
+            align-self: flex-end;
+            background: #0284c7;
+            color: white;
+        }
+        .chat-bubble.others {
+            align-self: flex-start;
+            background: #334155;
+            color: white;
+        }
+        .chat-sender {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Video Container */
+        #jitsiContainer {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h3 style="margin: 0; color: #38bdf8;">GSMS Workspace</h3>
+        </div>
+        <div class="user-info">
+            <div class="user-badge" id="userInfoDisplay">Inapakia...</div>
+            <a href="admin.html" id="adminLinkBtn" style="display: none; background: #f59e0b; color: black; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Admin Panel</a>
+            <button id="logoutBtn" style="width: auto; background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Logout</button>
+        </div>
+    </div>
+
+    <!-- Workspace Main Body -->
+    <div class="workspace">
+        
+        <!-- LEFT PANEL: Code Editor & Live Preview -->
+        <div class="editor-section">
+            <div class="toolbar">
+                <button id="runBtn" style="background: #10b981; color: white;">▶ Run Code</button>
+                <button id="saveBtn" style="background: #3b82f6; color: white;">💾 Save Cloud</button>
+                <button id="loadBtn" style="background: #8b5cf6; color: white;">✏️ Load Latest</button>
+                <button id="clearBtn" style="background: #64748b; color: white;">🗑️ Clear</button>
+            </div>
+            <textarea id="codeEditor" placeholder="Andika kodi zako za HTML, CSS, na JS hapa..."></textarea>
+            <div style="font-size: 0.8rem; color: #94a3b8;">Live Output Preview:</div>
+            <iframe id="previewFrame" title="Live Preview"></iframe>
+        </div>
+
+        <!-- RIGHT PANEL: Chat & Video Tabs -->
+        <div class="collab-section">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('chatTab', this)">💬 Team Chat</button>
+                <button class="tab-btn" onclick="switchTab('videoTab', this)">📹 Live Meeting & Screen Share</button>
+            </div>
+
+            <!-- Tab 1: Global Chat -->
+            <div id="chatTab" class="tab-content active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <small style="color: #94a3b8;">Realtime Team Messaging</small>
+                    <button id="clearChatBtn" style="display:none; width: auto; background: #dc2626; color: white; border: none; border-radius: 4px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer;">🧹 Safisha Chat</button>
+                </div>
+                <div class="chat-box" id="chatBox">
+                    <div style="text-align: center; color: #64748b;">Inapakia jumbe...</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatMessageInput" placeholder="Andika ujumbe wako hapa..." style="flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 4px;">
+                    <button id="sendMsgBtn" style="width: auto; padding: 0 20px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Tuma</button>
+                </div>
+            </div>
+
+            <!-- Tab 2: Live Video Session (Jitsi) -->
+            <div id="videoTab" class="tab-content">
+                <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.85rem; color: #94a3b8;">Live Audio/Video & Screen Sharing</span>
+                    <button id="startCallBtn" style="width: auto; background: #10b981; color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-weight: bold;">Anzisha/Jiunge na Meeting</button>
+                </div>
+                <div id="jitsiContainer">
+                    <div style="display: flex; height: 100%; justify-content: center; align-items: center; color: #64748b;">
+                        Bonyeza "Anzisha/Jiunge na Meeting" kuanza Live Call.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 3. Pakia Mafaili ya Mfumo bila Module Import issues -->
+    <script src="js/config.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+
+    <!-- Script Logic ya Workspace -->
+    <script>
+        let loggedUser = null;
+        let jitsiApi = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Guard Protection & User Details
+            loggedUser = await window.getVerifiedCurrentUser();
+            if (!loggedUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Display Info
+            document.getElementById('userInfoDisplay').textContent = `${loggedUser.full_name} (${loggedUser.role.toUpperCase()})`;
+            if (loggedUser.role === 'admin') {
+                document.getElementById('adminLinkBtn').style.display = 'inline-block';
+                document.getElementById('clearChatBtn').style.display = 'inline-block';
+            }
+
+            // Logout Action
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                if (typeof logout === 'function') {
+                    logout();
+                } else {
+                    window.logout();
+                }
+            });
+
+            // Init Workspace Components
+            setupEditor();
+            setupChat();
+
+            // Video Meeting Trigger
+            document.getElementById('startCallBtn').addEventListener('click', startLiveMeeting);
+        });
+
+        // Tab Switching Logic
+        window.switchTab = function(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(tb => tb.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // --- 1. CODE EDITOR LOGIC ---
+        function setupEditor() {
+            const editor = document.getElementById('codeEditor');
+            const preview = document.getElementById('previewFrame');
+
+            document.getElementById('runBtn').addEventListener('click', () => {
+                preview.srcdoc = editor.value;
+            });
+
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                editor.value = '';
+                preview.srcdoc = '';
+            });
+
+            document.getElementById('saveBtn').addEventListener('click', async () => {
+                const code = editor.value;
+                if (!code.trim()) return alert('Tafadhali andika kodi kwanza!');
+
+                try {
+                    if (window.supabaseClient) {
+                        const { error } = await window.supabaseClient.from('saved_codes').insert([{
+                            owner_id: loggedUser.id || null,
+                            owner_auth_id: loggedUser.auth_user_id,
+                            code_content: code
+                        }]);
+                        if (error) throw error;
+                        alert('Kodi imehifadhiwa kwenye Cloud!');
+                    } else {
+                        alert('Error: Supabase haijaunganishwa!');
+                    }
+                } catch (err) {
+                    alert('Imefeli ku-save: ' + err.message);
+                }
+            });
+
+            document.getElementById('loadBtn').addEventListener('click', async () => {
+                try {
+                    if (window.supabaseClient) {
+                        const { data, error } = await window.supabaseClient
+                            .from('saved_codes')
+                            .select('*')
+                            .eq('owner_auth_id', loggedUser.auth_user_id)
+                            .order('updated_at', { ascending: false })
+                            .limit(1);
+
+                        if (error) throw error;
+                        if (data && data.length > 0) {
+                            editor.value = data[0].code_content;
+                            preview.srcdoc = data[0].code_content;
+                            alert('Kodi ya mwisho imepakuliwa!');
+                        } else {
+                            alert('Hakuna kodi iliyohifadhiwa bado.');
+                        }
+                    }
+                } catch (err) {
+                    alert('Imefeli ku-load: ' + err.message);
+                }
+            });
+        }
+
+        // --- 2. CHAT LOGIC ---
+        async function setupChat() {
+            const chatBox = document.getElementById('chatBox');
+            const input = document.getElementById('chatMessageInput');
+            const sendBtn = document.getElementById('sendMsgBtn');
+
+            async function loadMessages() {
+                if (!window.supabaseClient) return;
+                const { data, error } = await window.supabaseClient.from('messages').select('*').order('created_at', { ascending: true });
+                if (error) return console.error(error);
+
+                chatBox.innerHTML = '';
+                if (data) {
+                    data.forEach(msg => appendMessageUI(msg));
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            function appendMessageUI(msg) {
+                const isMine = msg.sender_name === loggedUser.full_name;
+                const bubble = document.createElement('div');
+                bubble.className = `chat-bubble ${isMine ? 'mine' : 'others'}`;
+                const sender = document.createElement('div');
+                sender.className = 'chat-sender';
+                sender.textContent = msg.sender_name || 'User';
+                const text = document.createElement('div');
+                text.textContent = msg.message_text || '';
+                bubble.append(sender, text);
+                chatBox.appendChild(bubble);
+            }
+
+            sendBtn.addEventListener('click', async () => {
+                const text = input.value.trim();
+                if (!text) return;
+
+                input.value = '';
+                if (window.supabaseClient) {
+                    const { error } = await window.supabaseClient.from('messages').insert([{
+                        sender_name: loggedUser.full_name,
+                        sender_auth_id: loggedUser.auth_user_id,
+                        message_text: text
+                    }]);
+
+                    if (error) alert('Imefeli kutuma SMS: ' + error.message);
+                }
+            });
+
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendBtn.click();
+            });
+
+            document.getElementById('clearChatBtn').addEventListener('click', async () => {
+                const confirmation = prompt("Andika 'FUTA' ili kudhibitisha kusafisha chat zote:");
+                if (confirmation === 'FUTA' && window.supabaseClient) {
+                    await window.supabaseClient.from('messages').delete().neq('id', 0);
+                    chatBox.innerHTML = '';
+                }
+            });
+
+            // Realtime Listener
+            if (window.supabaseClient) {
+                window.supabaseClient
+                    .channel('public:messages')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+                        appendMessageUI(payload.new);
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    })
+                    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, () => {
+                        loadMessages();
+                    })
+                    .subscribe();
+
+                await loadMessages();
+            }
+        }
+
+        // --- 3. LIVE JITSI VIDEO MEETING ---
+        function startLiveMeeting() {
+            const container = document.getElementById('jitsiContainer');
+            container.innerHTML = ''; 
+
+            if (typeof JitsiMeetExternalAPI === 'undefined') {
+                alert("Jitsi API haijapakia vizuri. Angalia mtandao wako.");
+                return;
+            }
+
+            const domain = "meet.jit.si";
+            const options = {
+                roomName: "GSMS_Hub_Collaboration_Room_2026",
+                width: "100%",
+                height: "100%",
+                parentNode: container,
+                userInfo: {
+                    displayName: `${loggedUser.full_name} (${loggedUser.role})`
+                },
+                configOverwrite: {
+                    startWithAudioMuted: false,
+                    startWithVideoMuted: false
+                },
+                interfaceConfigOverwrite: {
+                    TOOLBAR_BUTTONS: [
+                        'microphone', 'camera', 'desktop', 'embedmeeting',
+                        'fullscreen', 'fodeviceselection', 'hangup',
+                        'chat', 'raisehand', 'tileview', 'shading'
+                    ]
+                }
+            };
+
+            jitsiApi = new JitsiMeetExternalAPI(domain, options);
+        }
+    </script>
+</body>
+</html>

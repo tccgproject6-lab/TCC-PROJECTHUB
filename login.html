@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GSMS Hub - Ingia</title><link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="card">
+  <h2 style="text-align:center;color:var(--accent);margin-bottom:5px">GSMS Hub</h2>
+  <hr style="border-color:var(--border-color);margin-bottom:20px">
+  <div id="loginSection">
+    <h3 style="margin-top:0">Ingia Kwenye Mfumo</h3>
+    <form id="loginForm">
+      <label for="identifier">Email au Reg No:</label>
+      <input type="text" id="identifier" autocomplete="username" placeholder="Email au Reg No" required>
+      <label for="password">Nenosiri:</label>
+      <input type="password" id="password" autocomplete="current-password" placeholder="Nenosiri" required>
+      <button id="loginBtn" type="submit" style="width:100%;margin-top:10px">Ingia (Login)</button>
+    </form>
+    <p id="loginStatus" class="text-muted" role="status" aria-live="polite"></p>
+  </div>
+  <div id="resetPasswordSection" style="display:none">
+    <h3 style="margin-top:0">Badilisha Password</h3>
+    <p class="text-muted">Hii ni password ya muda. Weka password mpya yenye angalau characters 8.</p>
+    <form id="resetPasswordForm">
+      <label for="newPassword">Password mpya:</label>
+      <input type="password" id="newPassword" autocomplete="new-password" minlength="8" required>
+      <label for="confirmPassword">Rudia password:</label>
+      <input type="password" id="confirmPassword" autocomplete="new-password" minlength="8" required>
+      <button type="submit" style="width:100%">Hifadhi Password</button>
+    </form>
+  </div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const existing = await window.getVerifiedCurrentUser();
+  if (existing) window.redirectBasedOnRole(existing);
+
+  const form = document.getElementById('loginForm');
+  const reset = document.getElementById('resetPasswordForm');
+  const status = document.getElementById('loginStatus');
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true; status.textContent = 'Inaingia...';
+    try {
+      const user = await window.loginUser(document.getElementById('identifier').value.trim(), document.getElementById('password').value);
+      if (!user.is_password_changed) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('resetPasswordSection').style.display = 'block';
+        status.textContent = '';
+      } else window.redirectBasedOnRole(user);
+    } catch (err) {
+      status.textContent = err.message || 'Login imefeli.';
+    } finally { btn.disabled = false; }
+  });
+  reset.addEventListener('submit', async e => {
+    e.preventDefault();
+    const a = document.getElementById('newPassword').value;
+    const b = document.getElementById('confirmPassword').value;
+    if (a.length < 8) return alert('Password iwe na angalau characters 8.');
+    if (a !== b) return alert('Password hazifanani.');
+    try {
+      await window.updatePassword(a);
+      const user = await window.getVerifiedCurrentUser();
+      window.redirectBasedOnRole(user);
+    } catch (err) { alert(err.message || 'Imeshindikana kubadilisha password.'); }
+  });
+});
+</script>
+</body></html>
